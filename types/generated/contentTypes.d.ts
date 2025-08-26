@@ -733,15 +733,8 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToOne',
       'plugin::users-permissions.user'
     >;
-    feedback: Attribute.Text;
-    customer_rating: Attribute.Integer &
-      Attribute.SetMinMax<
-        {
-          min: 0;
-          max: 5;
-        },
-        number
-      >;
+    full_name: Attribute.String;
+    phone_number: Attribute.BigInteger;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<

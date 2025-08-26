@@ -77,13 +77,11 @@
       "target": "plugin::users-permissions.user",
       "inversedBy": "clients"
     },
-    "feedback": {
-      "type": "text"
+    "full_name": {
+      "type": "string"
     },
-    "customer_rating": {
-      "type": "integer",
-      "max": 5,
-      "min": 0
+    "phone_number": {
+      "type": "biginteger"
     }
   }
 }
