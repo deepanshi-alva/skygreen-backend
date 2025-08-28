@@ -39,7 +39,7 @@
       "type": "text"
     },
     "rating": {
-      "type": "integer",
+      "type": "float",
       "max": 5,
       "min": 1
     }

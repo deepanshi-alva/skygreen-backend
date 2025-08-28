@@ -984,7 +984,7 @@ export interface ApiTestimonialTestimonial extends Schema.CollectionType {
     author: Attribute.Text;
     position: Attribute.Text;
     case_study_link: Attribute.Text;
-    rating: Attribute.Integer &
+    rating: Attribute.Float &
       Attribute.SetMinMax<
         {
           min: 1;
