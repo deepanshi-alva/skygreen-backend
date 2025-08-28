@@ -362,6 +362,76 @@ export interface AdminTransferTokenPermission extends Schema.CollectionType {
   };
 }
 
+export interface ApiCalculatorSettingCalculatorSetting
+  extends Schema.SingleType {
+  collectionName: 'calculator_settings';
+  info: {
+    singularName: 'calculator-setting';
+    pluralName: 'calculator-settings';
+    displayName: 'Calculator Setting';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    solar_hours_per_day: Attribute.Float & Attribute.DefaultTo<5>;
+    cost_inr_per_kw: Attribute.BigInteger & Attribute.DefaultTo<'70000'>;
+    degradation_pct_per_year: Attribute.Float & Attribute.DefaultTo<0.4>;
+    lifetime_years: Attribute.Integer & Attribute.DefaultTo<30>;
+    panel_watt_w: Attribute.BigInteger & Attribute.DefaultTo<'575'>;
+    panel_area_sqft: Attribute.BigInteger & Attribute.DefaultTo<'26'>;
+    subsidy: Attribute.Component<'calculator.subsidy'>;
+    topcon_575_daily_generation: Attribute.Float & Attribute.DefaultTo<3.22>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::calculator-setting.calculator-setting',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::calculator-setting.calculator-setting',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiStateState extends Schema.CollectionType {
+  collectionName: 'states';
+  info: {
+    singularName: 'state';
+    pluralName: 'states';
+    displayName: 'State';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    name: Attribute.String & Attribute.Required & Attribute.Unique;
+    type: Attribute.Enumeration<['general', 'union_territory']>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::state.state',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::state.state',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface PluginUploadFile extends Schema.CollectionType {
   collectionName: 'files';
   info: {
@@ -809,6 +879,8 @@ declare module '@strapi/types' {
       'admin::api-token-permission': AdminApiTokenPermission;
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
+      'api::calculator-setting.calculator-setting': ApiCalculatorSettingCalculatorSetting;
+      'api::state.state': ApiStateState;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
       'plugin::content-releases.release': PluginContentReleasesRelease;

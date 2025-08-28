@@ -1,0 +1,50 @@
+{
+  "kind": "singleType",
+  "collectionName": "calculator_settings",
+  "info": {
+    "singularName": "calculator-setting",
+    "pluralName": "calculator-settings",
+    "displayName": "Calculator Setting",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "solar_hours_per_day": {
+      "type": "float",
+      "default": 5
+    },
+    "cost_inr_per_kw": {
+      "type": "biginteger",
+      "default": "70000"
+    },
+    "degradation_pct_per_year": {
+      "type": "float",
+      "default": 0.4
+    },
+    "lifetime_years": {
+      "type": "integer",
+      "default": 30
+    },
+    "panel_watt_w": {
+      "type": "biginteger",
+      "default": "575"
+    },
+    "panel_area_sqft": {
+      "type": "biginteger",
+      "default": "26"
+    },
+    "subsidy": {
+      "displayName": "subsidy",
+      "type": "component",
+      "repeatable": false,
+      "component": "calculator.subsidy"
+    },
+    "topcon_575_daily_generation": {
+      "type": "float",
+      "default": 3.22
+    }
+  }
+}
