@@ -362,76 +362,6 @@ export interface AdminTransferTokenPermission extends Schema.CollectionType {
   };
 }
 
-export interface ApiCalculatorSettingCalculatorSetting
-  extends Schema.SingleType {
-  collectionName: 'calculator_settings';
-  info: {
-    singularName: 'calculator-setting';
-    pluralName: 'calculator-settings';
-    displayName: 'Calculator Setting';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    solar_hours_per_day: Attribute.Float & Attribute.DefaultTo<5>;
-    cost_inr_per_kw: Attribute.BigInteger & Attribute.DefaultTo<'70000'>;
-    degradation_pct_per_year: Attribute.Float & Attribute.DefaultTo<0.4>;
-    lifetime_years: Attribute.Integer & Attribute.DefaultTo<30>;
-    panel_watt_w: Attribute.BigInteger & Attribute.DefaultTo<'575'>;
-    panel_area_sqft: Attribute.BigInteger & Attribute.DefaultTo<'26'>;
-    subsidy: Attribute.Component<'calculator.subsidy'>;
-    topcon_575_daily_generation: Attribute.Float & Attribute.DefaultTo<3.22>;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::calculator-setting.calculator-setting',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::calculator-setting.calculator-setting',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiStateState extends Schema.CollectionType {
-  collectionName: 'states';
-  info: {
-    singularName: 'state';
-    pluralName: 'states';
-    displayName: 'State';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    name: Attribute.String & Attribute.Required & Attribute.Unique;
-    type: Attribute.Enumeration<['general', 'union_territory']>;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::state.state',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::state.state',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
 export interface PluginUploadFile extends Schema.CollectionType {
   collectionName: 'files';
   info: {
@@ -869,6 +799,217 @@ export interface PluginI18NLocale extends Schema.CollectionType {
   };
 }
 
+export interface ApiBlogBlog extends Schema.CollectionType {
+  collectionName: 'blogs';
+  info: {
+    singularName: 'blog';
+    pluralName: 'blogs';
+    displayName: 'Blog';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.Text;
+    description: Attribute.Text;
+    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    tag: Attribute.Text;
+    link_of_blog: Attribute.Text;
+    meta: Attribute.Text;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::blog.blog', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::blog.blog', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
+export interface ApiCalculatorSettingCalculatorSetting
+  extends Schema.SingleType {
+  collectionName: 'calculator_settings';
+  info: {
+    singularName: 'calculator-setting';
+    pluralName: 'calculator-settings';
+    displayName: 'Calculator Setting';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    solar_hours_per_day: Attribute.Float & Attribute.DefaultTo<5>;
+    cost_inr_per_kw: Attribute.BigInteger & Attribute.DefaultTo<'70000'>;
+    degradation_pct_per_year: Attribute.Float & Attribute.DefaultTo<0.4>;
+    lifetime_years: Attribute.Integer & Attribute.DefaultTo<30>;
+    panel_watt_w: Attribute.BigInteger & Attribute.DefaultTo<'575'>;
+    panel_area_sqft: Attribute.BigInteger & Attribute.DefaultTo<'26'>;
+    subsidy: Attribute.Component<'calculator.subsidy'>;
+    topcon_575_daily_generation: Attribute.Float & Attribute.DefaultTo<3.22>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::calculator-setting.calculator-setting',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::calculator-setting.calculator-setting',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiEventEvent extends Schema.CollectionType {
+  collectionName: 'events';
+  info: {
+    singularName: 'event';
+    pluralName: 'events';
+    displayName: 'Event';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.Text;
+    description: Attribute.Text;
+    image: Attribute.Media<'images' | 'videos'>;
+    tag: Attribute.Text;
+    link_of_event: Attribute.Text;
+    meta: Attribute.Text;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::event.event',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::event.event',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiHeadlineHeadline extends Schema.CollectionType {
+  collectionName: 'headlines';
+  info: {
+    singularName: 'headline';
+    pluralName: 'headlines';
+    displayName: 'Headline';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    title: Attribute.Text;
+    description: Attribute.Text;
+    image: Attribute.Media<'images' | 'videos'>;
+    tag: Attribute.Text;
+    link_of_news: Attribute.Text;
+    meta: Attribute.Text;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::headline.headline',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::headline.headline',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiStateState extends Schema.CollectionType {
+  collectionName: 'states';
+  info: {
+    singularName: 'state';
+    pluralName: 'states';
+    displayName: 'State';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    name: Attribute.String & Attribute.Required & Attribute.Unique;
+    type: Attribute.Enumeration<['general', 'union_territory']>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::state.state',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::state.state',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiTestimonialTestimonial extends Schema.CollectionType {
+  collectionName: 'testimonials';
+  info: {
+    singularName: 'testimonial';
+    pluralName: 'testimonials';
+    displayName: 'Testimonial';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    company_name: Attribute.Text;
+    quote: Attribute.Text;
+    author: Attribute.Text;
+    position: Attribute.Text;
+    case_study_link: Attribute.Text;
+    rating: Attribute.Integer &
+      Attribute.SetMinMax<
+        {
+          min: 1;
+          max: 5;
+        },
+        number
+      >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::testimonial.testimonial',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::testimonial.testimonial',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 declare module '@strapi/types' {
   export module Shared {
     export interface ContentTypes {
@@ -879,8 +1020,6 @@ declare module '@strapi/types' {
       'admin::api-token-permission': AdminApiTokenPermission;
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
-      'api::calculator-setting.calculator-setting': ApiCalculatorSettingCalculatorSetting;
-      'api::state.state': ApiStateState;
       'plugin::upload.file': PluginUploadFile;
       'plugin::upload.folder': PluginUploadFolder;
       'plugin::content-releases.release': PluginContentReleasesRelease;
@@ -889,6 +1028,12 @@ declare module '@strapi/types' {
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'plugin::i18n.locale': PluginI18NLocale;
+      'api::blog.blog': ApiBlogBlog;
+      'api::calculator-setting.calculator-setting': ApiCalculatorSettingCalculatorSetting;
+      'api::event.event': ApiEventEvent;
+      'api::headline.headline': ApiHeadlineHeadline;
+      'api::state.state': ApiStateState;
+      'api::testimonial.testimonial': ApiTestimonialTestimonial;
     }
   }
 }
