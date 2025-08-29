@@ -944,6 +944,7 @@ export interface ApiStateState extends Schema.CollectionType {
     singularName: 'state';
     pluralName: 'states';
     displayName: 'State';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -951,6 +952,11 @@ export interface ApiStateState extends Schema.CollectionType {
   attributes: {
     name: Attribute.String & Attribute.Required & Attribute.Unique;
     type: Attribute.Enumeration<['general', 'union_territory']>;
+    three_kw_rate: Attribute.BigInteger;
+    one_kw_rate: Attribute.BigInteger;
+    total_subsidy: Attribute.BigInteger;
+    state_top_up: Attribute.BigInteger & Attribute.DefaultTo<'0'>;
+    disclaimers: Attribute.Blocks;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

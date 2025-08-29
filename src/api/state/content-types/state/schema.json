@@ -4,7 +4,8 @@
   "info": {
     "singularName": "state",
     "pluralName": "states",
-    "displayName": "State"
+    "displayName": "State",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -22,6 +23,22 @@
         "general",
         "union_territory"
       ]
+    },
+    "three_kw_rate": {
+      "type": "biginteger"
+    },
+    "one_kw_rate": {
+      "type": "biginteger"
+    },
+    "total_subsidy": {
+      "type": "biginteger"
+    },
+    "state_top_up": {
+      "type": "biginteger",
+      "default": "0"
+    },
+    "disclaimers": {
+      "type": "blocks"
     }
   }
 }
