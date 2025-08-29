@@ -805,6 +805,7 @@ export interface ApiBlogBlog extends Schema.CollectionType {
     singularName: 'blog';
     pluralName: 'blogs';
     displayName: 'Blog';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -814,7 +815,7 @@ export interface ApiBlogBlog extends Schema.CollectionType {
     description: Attribute.Text;
     image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
     tag: Attribute.Text;
-    link_of_blog: Attribute.Text;
+    link_of_article: Attribute.Text;
     meta: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -871,6 +872,7 @@ export interface ApiEventEvent extends Schema.CollectionType {
     singularName: 'event';
     pluralName: 'events';
     displayName: 'Event';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -880,7 +882,7 @@ export interface ApiEventEvent extends Schema.CollectionType {
     description: Attribute.Text;
     image: Attribute.Media<'images' | 'videos'>;
     tag: Attribute.Text;
-    link_of_event: Attribute.Text;
+    link_of_article: Attribute.Text;
     meta: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -906,6 +908,7 @@ export interface ApiHeadlineHeadline extends Schema.CollectionType {
     singularName: 'headline';
     pluralName: 'headlines';
     displayName: 'Headline';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -915,7 +918,7 @@ export interface ApiHeadlineHeadline extends Schema.CollectionType {
     description: Attribute.Text;
     image: Attribute.Media<'images' | 'videos'>;
     tag: Attribute.Text;
-    link_of_news: Attribute.Text;
+    link_of_article: Attribute.Text;
     meta: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;

@@ -4,7 +4,8 @@
   "info": {
     "singularName": "headline",
     "pluralName": "headlines",
-    "displayName": "Headline"
+    "displayName": "Headline",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -18,17 +19,18 @@
       "type": "text"
     },
     "image": {
+      "type": "media",
+      "multiple": false,
+      "required": false,
       "allowedTypes": [
         "images",
         "videos"
-      ],
-      "type": "media",
-      "multiple": false
+      ]
     },
     "tag": {
       "type": "text"
     },
-    "link_of_news": {
+    "link_of_article": {
       "type": "text"
     },
     "meta": {
