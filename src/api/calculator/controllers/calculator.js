@@ -220,6 +220,7 @@ module.exports = {
             let monthlyUnits = 0;
             let sanctionedLoadMustBe = 0;
             let dailyUnit = 0;
+            let monthlySpendInr = 0;
 
             // ----------------------
             // Residential Path
@@ -227,8 +228,10 @@ module.exports = {
             if (!is_rwa) {
                 if (sizing_method === "bill") {
                     monthlyUnits = monthly_bill_inr / tariff_inr_per_kwh;
+                    monthlySpendInr = monthly_bill_inr;
                 } else if (sizing_method === "units") {
                     monthlyUnits = monthly_units_kwh;
+                    monthlySpendInr = monthly_units_kwh * tariff_inr_per_kwh;
                 } else {
                     return ctx.badRequest("Invalid sizing_method for residential. Use 'bill' or 'units'.");
                 }
@@ -272,7 +275,7 @@ module.exports = {
                 dailyUnit = monthlyUnits / 30;
             }
 
-
+            let totalSpend = monthlySpendInr*12*30;
             // // Step 1: Recommended KW (only from bill or units)
             // let monthlyUnits = 0;
             // if (sizing_method === "bill") {
@@ -342,6 +345,7 @@ module.exports = {
             const disclaimer = is_rwa
                 ? stateData.rwa_disclaimer
                 : stateData.disclaimers;
+                
 
             ctx.send({
                 state: state_name,
@@ -353,6 +357,8 @@ module.exports = {
                 panel_count: panelCount,
                 subsidy_eligible_kw: eligibleKw,
                 monthly_unit: monthlyUnits,
+                monthly_spend: monthlySpendInr,
+                total_spend: totalSpend,
                 daily_unit: dailyUnit,
                 central_subsidy_inr: centralSubsidyInr,
                 state_subsidy: stateSubsidyInr,
