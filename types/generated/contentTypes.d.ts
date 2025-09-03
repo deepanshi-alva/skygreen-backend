@@ -957,6 +957,22 @@ export interface ApiStateState extends Schema.CollectionType {
     total_subsidy: Attribute.BigInteger;
     state_top_up: Attribute.BigInteger & Attribute.DefaultTo<'0'>;
     disclaimers: Attribute.Blocks;
+    rwa_enabled: Attribute.Boolean & Attribute.DefaultTo<false>;
+    rwa_central_rate: Attribute.BigInteger & Attribute.DefaultTo<'19800'>;
+    rwa_per_house_cap_kw: Attribute.Integer & Attribute.DefaultTo<3>;
+    rwa_total_cap_kw: Attribute.Integer & Attribute.DefaultTo<500>;
+    rwa_mode: Attribute.Enumeration<
+      [
+        'none',
+        'cfa_only',
+        'flat_per_kw',
+        'percent_of_cost',
+        'fixed_per_house',
+        'state_only'
+      ]
+    >;
+    rwa_disclaimer: Attribute.Blocks;
+    rwa_state_topup: Attribute.BigInteger & Attribute.DefaultTo<'0'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

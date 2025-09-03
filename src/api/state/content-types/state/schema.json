@@ -39,6 +39,40 @@
     },
     "disclaimers": {
       "type": "blocks"
+    },
+    "rwa_enabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "rwa_central_rate": {
+      "type": "biginteger",
+      "default": "19800"
+    },
+    "rwa_per_house_cap_kw": {
+      "type": "integer",
+      "default": 3
+    },
+    "rwa_total_cap_kw": {
+      "type": "integer",
+      "default": 500
+    },
+    "rwa_mode": {
+      "type": "enumeration",
+      "enum": [
+        "none",
+        "cfa_only",
+        "flat_per_kw",
+        "percent_of_cost",
+        "fixed_per_house",
+        "state_only"
+      ]
+    },
+    "rwa_disclaimer": {
+      "type": "blocks"
+    },
+    "rwa_state_topup": {
+      "type": "biginteger",
+      "default": "0"
     }
   }
 }

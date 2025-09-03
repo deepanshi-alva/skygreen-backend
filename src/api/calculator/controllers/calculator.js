@@ -38,15 +38,7 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
         else if (finalDcKw <= 2) state = 40000;
         else state = 50000; // for 3 kW and above
     }
-    else if (name.toLowerCase() === "uttarakhand") {
-        // Central CFA same as other special states (already done above)
-
-        // State = 30% of benchmark × eligible kW
-        state = subsidyEligibleKw * benchmarkCostPerKw * 0.30;
-    }
-    else if (name.toLowerCase() === "puducherry") {
-        // Central CFA same as other special states (already done above)
-
+    else if (name.toLowerCase() === "uttarakhand" || name.toLowerCase() === "puducherry") {
         // State = 30% of benchmark × eligible kW
         state = subsidyEligibleKw * benchmarkCostPerKw * 0.30;
     }
@@ -58,13 +50,11 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
             central = (3 * benchmarkCostPerKw * 0.40) +
                 ((finalDcKw - 3) * benchmarkCostPerKw * 0.20);
         } else {
-            // GHS / RWA common facilities
             central = finalDcKw * benchmarkCostPerKw * 0.20;
         }
         state = 0; // Haryana has no extra state subsidy
     }
     else if (name.toLowerCase() === "gujarat") {
-        // Gujarat SURYA scheme (replaces central CFA completely)
         central = 0; // no central CFA allowed
 
         // Residential-only calculation
@@ -78,18 +68,44 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
         }
     }
     else if (name.toLowerCase() === "uttar pradesh") {
-        // --- Central CFA (slab, capped at 78k) ---
-        if (finalDcKw <= 2) {
-            central = finalDcKw * 30000;
-        } else if (finalDcKw > 2 && finalDcKw <= 3) {
-            central = (2 * 30000) + ((finalDcKw - 2) * 18000);
-        } else {
-            central = 78000; // max cap
-        }
-
         // --- State top-up (₹15k/kW up to 2 kW, max 30k) ---
         const eligibleStateKw = Math.min(finalDcKw, 2);
         state = Math.min(eligibleStateKw * 15000, 30000);
+    }
+    else if (name.toLowerCase() === "lakshadweep") {
+        // Lakshadweep = 10% of system cost (1–3 kW), capped 60k
+        const topUpPerKw = benchmarkCostPerKw * 0.10;
+        state = subsidyEligibleKw * topUpPerKw;
+        state = Math.min(state, 60000); // cap safeguard
+    }
+    else if (name.toLowerCase() === "madhya pradesh") {
+        // --- State subsidy percentage-based ---
+        const grossCost = finalDcKw * benchmarkCostPerKw;
+
+        if (finalDcKw <= 3) {
+            state = grossCost * 0.40; // 40% of system cost
+            // cap at 46,920 for 3 kW
+            if (finalDcKw === 3) state = Math.min(state, 46920);
+        } else if (finalDcKw > 3 && finalDcKw <= 10) {
+            const first3 = 3 * benchmarkCostPerKw * 0.40;
+            const rest = (finalDcKw - 3) * benchmarkCostPerKw * 0.20;
+            state = first3 + rest;
+
+            // cap at ~96,000 for 10 kW
+            if (finalDcKw === 10) state = Math.min(state, 96044);
+        }
+    }
+    else if (["dadra & nagar haveli & daman & diu", "dnhdd"].includes(name.toLowerCase())) {
+        // UT top-up subsidy, capped at 10 kW
+        const subsidyKw = Math.min(finalDcKw, 10);
+        state = subsidyKw * (state_top_up || 0);
+    }
+    else if (name.toLowerCase().includes("andaman") || name.toLowerCase().includes("nicobar")) {
+        // --- Step 1: Central CFA (extended up to 10 kW) ---
+        const subsidyKw = Math.min(finalDcKw, 10);
+        if (subsidyKw === 1) state = 45000;
+        else if (subsidyKw === 2) state = 90000;
+        else if (subsidyKw >= 3) state = 117000; // applies up to 10 kW
     }
     else {
         // Default logic → per kW top-up
@@ -100,9 +116,58 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
 
     // --- Step 3: Total ---
     const total = central + state;
-
     return { central, state, total };
 };
+
+// --------------------
+// RWA / GHS Subsidy calculator
+// --------------------
+const rwaSubsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw, numHouses, recommendedKw) => {
+    const {
+        rwa_enabled,
+        rwa_central_rate,
+        rwa_per_house_cap_kw,
+        rwa_total_cap_kw,
+        rwa_mode,
+        rwa_state_top_up
+    } = stateData;
+
+    if (!rwa_enabled || rwa_mode === "none") {
+        return { central: 0, state: 0, total: 0, eligibleKw: 0 };
+    }
+
+    // Eligible capacity
+    const eligibleKw = Math.min(finalDcKw, recommendedKw, numHouses * rwa_per_house_cap_kw, rwa_total_cap_kw);
+    console.log("this is the subsidy eligible for", eligibleKw, recommendedKw, finalDcKw, numHouses * rwa_per_house_cap_kw, rwa_total_cap_kw)
+
+    let central = 0, state = 0;
+
+    if (rwa_mode !== "state_only") {
+        central = eligibleKw * rwa_central_rate;
+    }
+
+    switch (rwa_mode) {
+        case "cfa_only":
+            state = 0;
+            break;
+        case "flat_per_kw":
+            state = eligibleKw * (rwa_state_top_up || 0);
+            break;
+        case "percent_of_cost":
+            state = eligibleKw * benchmarkCostPerKw * ((rwa_state_top_up || 20) / 100);
+            break;
+        case "fixed_per_house":
+            state = numHouses * (rwa_state_top_up || 0);
+            break;
+        case "state_only":
+            central = 0;
+            state = eligibleKw * benchmarkCostPerKw * ((rwa_state_top_up || 20) / 100);
+            break;
+    }
+
+    return { central, state, total: central + state, eligibleKw };
+};
+
 
 module.exports = {
     async estimate(ctx) {
@@ -115,6 +180,11 @@ module.exports = {
                 monthly_units_kwh,
                 roof_area_value,
                 roof_area_unit = "sqft",
+                is_rwa = false,
+                num_houses = 1,
+                proposed_capacity_kw = 0,
+                society_sanctioned_load_kw = 0,
+                per_house_sanctioned_load_kw = 0
             } = ctx.request.body;
 
             // Fetch calculator settings (includes subsidy values)
@@ -122,7 +192,7 @@ module.exports = {
                 "api::calculator-setting.calculator-setting",
             );
             const settings = settingsArr;
-            console.log("this is the settings data", settingsArr);
+            // console.log("this is the settings data", settingsArr);
 
             // Fetch state-specific subsidy data
             const stateDataArr = await strapi.entityService.findMany(
@@ -135,7 +205,7 @@ module.exports = {
                 return ctx.badRequest(`State ${state_name} not found`);
             }
             const stateData = stateDataArr[0];
-            console.log("this is the state data", stateData);
+            // console.log("this is the state data", stateData);
 
             // Convert roof area to sqft
             let roofSqft = roof_area_value;
@@ -144,38 +214,97 @@ module.exports = {
             if (roof_area_unit === "ground") roofSqft = roofSqft * 2400;
             if (roof_area_unit === "cent") roofSqft = roofSqft * 435.6;
 
-            // Step 1: Recommended KW (only from bill or units)
+            let recommendedKw = 0;
+            let finalDcKw = 0;
+            let panelCount = 0;
             let monthlyUnits = 0;
-            if (sizing_method === "bill") {
-                monthlyUnits = monthly_bill_inr / tariff_inr_per_kwh;
-            } else if (sizing_method === "units") {
-                monthlyUnits = monthly_units_kwh;
+            let sanctionedLoadMustBe = 0;
+            let dailyUnit = 0;
+
+            // ----------------------
+            // Residential Path
+            // ----------------------
+            if (!is_rwa) {
+                if (sizing_method === "bill") {
+                    monthlyUnits = monthly_bill_inr / tariff_inr_per_kwh;
+                } else if (sizing_method === "units") {
+                    monthlyUnits = monthly_units_kwh;
+                } else {
+                    return ctx.badRequest("Invalid sizing_method for residential. Use 'bill' or 'units'.");
+                }
+
+                recommendedKw = monthlyUnits / (settings.solar_hours_per_day * 30);
+                panelCount = Math.ceil((recommendedKw * 1000) / settings.panel_watt_w);
+                finalDcKw = panelCount * (settings.panel_watt_w / 1000);
+                sanctionedLoadMustBe = Math.ceil(finalDcKw);
+                dailyUnit = monthlyUnits / 30;
+
+                // ----------------------
+                // RWA / GHS Path
+                // ----------------------
             } else {
-                return ctx.badRequest("Invalid sizing method. Use 'bill' or 'units'.");
+                switch (sizing_method) {
+                    case "proposed":
+                        recommendedKw = proposed_capacity_kw;
+                        break;
+                    case "sanctioned_total":
+                        recommendedKw = society_sanctioned_load_kw;
+                        break;
+                    case "sanctioned_per_house":
+                        recommendedKw = per_house_sanctioned_load_kw * num_houses;
+                        break;
+                    case "bill":
+                        monthlyUnits = monthly_bill_inr / tariff_inr_per_kwh;
+                        // finalDcKw = monthlyUnits / (settings.solar_hours_per_day * 30);
+                        recommendedKw = monthlyUnits / (settings.solar_hours_per_day * 30);
+                        break;
+                    case "units":
+                        monthlyUnits = monthly_units_kwh;
+                        recommendedKw = monthlyUnits / (settings.solar_hours_per_day * 30);
+                        break;
+                    default:
+                        return ctx.badRequest("Invalid sizing_method for RWA");
+                }
+
+                panelCount = Math.ceil((recommendedKw * 1000) / settings.panel_watt_w);
+                finalDcKw = panelCount * (settings.panel_watt_w / 1000);
+                sanctionedLoadMustBe = Math.ceil(finalDcKw);
+                dailyUnit = monthlyUnits / 30;
             }
 
-            // Step 2: Recommended kw
-            console.log("this is the monthlyunit", monthlyUnits)
-            const recommendedKw = monthlyUnits / (settings.solar_hours_per_day * 30);
-            console.log("this is the recommended kw", recommendedKw);
 
-            // Step 3: Panel Count
-            const panelCount = Math.ceil(recommendedKw * 1000 / settings.panel_watt_w);
-            console.log("this is the panelCount", panelCount);
+            // // Step 1: Recommended KW (only from bill or units)
+            // let monthlyUnits = 0;
+            // if (sizing_method === "bill") {
+            //     monthlyUnits = monthly_bill_inr / tariff_inr_per_kwh;
+            // } else if (sizing_method === "units") {
+            //     monthlyUnits = monthly_units_kwh;
+            // } else {
+            //     return ctx.badRequest("Invalid sizing method. Use 'bill' or 'units'.");
+            // }
 
-            // Step 4: Final DC KW SDC
-            const finalDcKw = panelCount * (settings.panel_watt_w / 1000);
-            console.log("this is the sdc", finalDcKw);
+            // const dailyUnit = monthlyUnits / 30;
+
+            // // Step 2: Recommended kw
+            // console.log("this is the monthlyunit", monthlyUnits)
+            // const recommendedKw = monthlyUnits / (settings.solar_hours_per_day * 30);
+            // console.log("this is the recommended kw", recommendedKw);
+
+            // // Step 3: Panel Count
+            // const panelCount = Math.ceil(recommendedKw * 1000 / settings.panel_watt_w);
+            // console.log("this is the panelCount", panelCount);
+
+            // // Step 4: Final DC KW SDC
+            // const finalDcKw = panelCount * (settings.panel_watt_w / 1000);
+            // const sanctionedLoadMustBe = Math.ceil(finalDcKw);
+            // console.log("this is the sdc", finalDcKw);
 
             // Step 5: Subsidy Eligible KW
-            const subsidyEligibleKw = Math.min(finalDcKw, 3);
-            console.log("this is the subsidyEligibleKw", subsidyEligibleKw);
+            const subsidyResult = is_rwa
+                ? rwaSubsidyCalc(finalDcKw, stateData, settings.cost_inr_per_kw, num_houses, recommendedKw)
+                : subsidyCalc(finalDcKw, stateData, settings.cost_inr_per_kw);
 
-            // Step 6: Subsidy INR
-            const { central: centralSubsidyInr, state: stateSubsidyInr, total: totalSubsidyInr } = subsidyCalc(subsidyEligibleKw, stateData, settings.cost_inr_per_kw);
-            console.log("this is the central subsidy", centralSubsidyInr);
-            console.log("this is the stateSubsidyInr", stateSubsidyInr);
-            console.log("this is the totalSubsidyInr", totalSubsidyInr);
+            const { central: centralSubsidyInr, state: stateSubsidyInr, total: totalSubsidyInr, eligibleKw } = subsidyResult;
 
             // Step 7: Costs
             const grossCostInr = finalDcKw * settings.cost_inr_per_kw;
@@ -190,6 +319,7 @@ module.exports = {
             // Step 9: Savings
             const monthlySaving = monthlyGen * tariff_inr_per_kwh;
             const annualSaving = monthlySaving * 12;
+            const lifetime_saving = annualSaving * 30;
 
             // Step 10: Payback
             let paybackYears = netCostInr > 0 ? (netCostInr / annualSaving) : 0;
@@ -205,18 +335,23 @@ module.exports = {
             } else {
                 // No area given → only recommend required area
                 roofNeededSqft = panelCount * 60;
-                roofOk = null; // means "not checked"
+                roofOk = null;
             }
 
-            const dailyUnit = monthlyUnits / 30;
-            const lifetime_saving = annualSaving * 30;
+            // Disclaimer (residential vs RWA)
+            const disclaimer = is_rwa
+                ? stateData.rwa_disclaimer
+                : stateData.disclaimers;
 
             ctx.send({
                 state: state_name,
+                is_rwa,
+                num_houses,
                 recommended_kw: recommendedKw,
                 final_dc_kw: finalDcKw,
+                sanctioned_load_must_be: sanctionedLoadMustBe,
                 panel_count: panelCount,
-                subsidy_eligible_kw: subsidyEligibleKw,
+                subsidy_eligible_kw: eligibleKw,
                 monthly_unit: monthlyUnits,
                 daily_unit: dailyUnit,
                 central_subsidy_inr: centralSubsidyInr,
@@ -234,7 +369,8 @@ module.exports = {
                 payback_years: paybackYears,
                 roof_needed_sqft: roofNeededSqft,
                 roof_area_available: roofSqft,
-                roof_fits: roofOk
+                roof_fits: roofOk,
+                disclaimer
             });
         } catch (err) {
             ctx.throw(500, err);
