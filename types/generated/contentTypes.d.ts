@@ -949,18 +949,85 @@ export interface ApiStateState extends Schema.CollectionType {
   options: {
     draftAndPublish: true;
   };
+  pluginOptions: {
+    i18n: {
+      localized: true;
+    };
+  };
   attributes: {
-    name: Attribute.String & Attribute.Required & Attribute.Unique;
-    type: Attribute.Enumeration<['general', 'union_territory']>;
-    three_kw_rate: Attribute.BigInteger;
-    one_kw_rate: Attribute.BigInteger;
-    total_subsidy: Attribute.BigInteger;
-    state_top_up: Attribute.BigInteger & Attribute.DefaultTo<'0'>;
-    disclaimers: Attribute.Blocks;
-    rwa_enabled: Attribute.Boolean & Attribute.DefaultTo<false>;
-    rwa_central_rate: Attribute.BigInteger & Attribute.DefaultTo<'19800'>;
-    rwa_per_house_cap_kw: Attribute.Integer & Attribute.DefaultTo<3>;
-    rwa_total_cap_kw: Attribute.Integer & Attribute.DefaultTo<500>;
+    name: Attribute.String &
+      Attribute.Required &
+      Attribute.Unique &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    type: Attribute.Enumeration<['general', 'union_territory']> &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    three_kw_rate: Attribute.BigInteger &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    one_kw_rate: Attribute.BigInteger &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    total_subsidy: Attribute.BigInteger &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    state_top_up: Attribute.BigInteger &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }> &
+      Attribute.DefaultTo<'0'>;
+    disclaimers: Attribute.Blocks &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    rwa_enabled: Attribute.Boolean &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }> &
+      Attribute.DefaultTo<false>;
+    rwa_central_rate: Attribute.BigInteger &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }> &
+      Attribute.DefaultTo<'19800'>;
+    rwa_per_house_cap_kw: Attribute.Integer &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }> &
+      Attribute.DefaultTo<3>;
+    rwa_total_cap_kw: Attribute.Integer &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }> &
+      Attribute.DefaultTo<500>;
     rwa_mode: Attribute.Enumeration<
       [
         'none',
@@ -970,9 +1037,25 @@ export interface ApiStateState extends Schema.CollectionType {
         'fixed_per_house',
         'state_only'
       ]
-    >;
-    rwa_disclaimer: Attribute.Blocks;
-    rwa_state_topup: Attribute.BigInteger & Attribute.DefaultTo<'0'>;
+    > &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    rwa_disclaimer: Attribute.Blocks &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
+    rwa_state_topup: Attribute.BigInteger &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }> &
+      Attribute.DefaultTo<'0'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -988,6 +1071,12 @@ export interface ApiStateState extends Schema.CollectionType {
       'admin::user'
     > &
       Attribute.Private;
+    localizations: Attribute.Relation<
+      'api::state.state',
+      'oneToMany',
+      'api::state.state'
+    >;
+    locale: Attribute.String;
   };
 }
 
