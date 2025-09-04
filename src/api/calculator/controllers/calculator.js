@@ -275,7 +275,7 @@ module.exports = {
                 dailyUnit = monthlyUnits / 30;
             }
 
-            let totalSpend = monthlySpendInr*12*30;
+            let totalSpend = monthlySpendInr * 12 * 30;
             // // Step 1: Recommended KW (only from bill or units)
             // let monthlyUnits = 0;
             // if (sizing_method === "bill") {
@@ -324,8 +324,23 @@ module.exports = {
             const annualSaving = monthlySaving * 12;
             const lifetime_saving = annualSaving * 30;
 
+            // Discom charge
+            const discomCharge = 200;
+            const annualDiscom = discomCharge * 12;
+            const totalDiscom = annualDiscom*30;
+            console.log("this is the total discom", totalDiscom)
+
+            // Net savings per year after discom
+            const annualSavingNet = annualSaving;
+
             // Step 10: Payback
             let paybackYears = netCostInr > 0 ? (netCostInr / annualSaving) : 0;
+
+            // Only count years after payback
+            const yearsAfterPayback = Math.max(settings.lifetime_years - Math.ceil(paybackYears), 0);
+
+            // Net gain after payback = savings in remaining years
+            const netGainAfterPayback = (annualSavingNet * yearsAfterPayback)-(totalDiscom);
 
             // Step 11: Roof Feasibility
             let roofNeededSqft;
@@ -345,7 +360,7 @@ module.exports = {
             const disclaimer = is_rwa
                 ? stateData.rwa_disclaimer
                 : stateData.disclaimers;
-                
+
 
             ctx.send({
                 state: state_name,
@@ -372,6 +387,9 @@ module.exports = {
                 monthly_saving_inr: monthlySaving,
                 annual_saving_inr: annualSaving,
                 lifetime_saving_inr: lifetime_saving,
+                annual_saving_net: annualSavingNet,
+                years_after_payback: yearsAfterPayback,
+                net_gain_after_payback: netGainAfterPayback,
                 payback_years: paybackYears,
                 roof_needed_sqft: roofNeededSqft,
                 roof_area_available: roofSqft,
