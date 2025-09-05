@@ -962,12 +962,6 @@ export interface ApiStateState extends Schema.CollectionType {
           localized: true;
         };
       }>;
-    type: Attribute.Enumeration<['general', 'union_territory']> &
-      Attribute.SetPluginOptions<{
-        i18n: {
-          localized: true;
-        };
-      }>;
     three_kw_rate: Attribute.BigInteger &
       Attribute.SetPluginOptions<{
         i18n: {

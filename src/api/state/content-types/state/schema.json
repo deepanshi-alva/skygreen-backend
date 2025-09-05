@@ -26,18 +26,6 @@
         }
       }
     },
-    "type": {
-      "type": "enumeration",
-      "enum": [
-        "general",
-        "union_territory"
-      ],
-      "pluginOptions": {
-        "i18n": {
-          "localized": true
-        }
-      }
-    },
     "three_kw_rate": {
       "type": "biginteger",
       "pluginOptions": {
