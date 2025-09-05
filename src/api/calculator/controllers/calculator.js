@@ -258,11 +258,13 @@ module.exports = {
                         break;
                     case "bill":
                         monthlyUnits = monthly_bill_inr / tariff_inr_per_kwh;
+                        monthlySpendInr = monthly_bill_inr;
                         // finalDcKw = monthlyUnits / (settings.solar_hours_per_day * 30);
                         recommendedKw = monthlyUnits / (settings.solar_hours_per_day * 30);
                         break;
                     case "units":
                         monthlyUnits = monthly_units_kwh;
+                        monthlySpendInr = monthly_units_kwh * tariff_inr_per_kwh;
                         recommendedKw = monthlyUnits / (settings.solar_hours_per_day * 30);
                         break;
                     default:
