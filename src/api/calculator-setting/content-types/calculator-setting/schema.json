@@ -36,12 +36,6 @@
       "type": "biginteger",
       "default": "26"
     },
-    "subsidy": {
-      "displayName": "subsidy",
-      "type": "component",
-      "repeatable": false,
-      "component": "calculator.subsidy"
-    },
     "topcon_575_daily_generation": {
       "type": "float",
       "default": 3.22

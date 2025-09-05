@@ -846,7 +846,6 @@ export interface ApiCalculatorSettingCalculatorSetting
     lifetime_years: Attribute.Integer & Attribute.DefaultTo<30>;
     panel_watt_w: Attribute.BigInteger & Attribute.DefaultTo<'575'>;
     panel_area_sqft: Attribute.BigInteger & Attribute.DefaultTo<'26'>;
-    subsidy: Attribute.Component<'calculator.subsidy'>;
     topcon_575_daily_generation: Attribute.Float & Attribute.DefaultTo<3.22>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
