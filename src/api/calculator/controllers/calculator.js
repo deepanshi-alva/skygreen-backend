@@ -317,18 +317,42 @@ module.exports = {
             const netGainAfterPayback = (annualSavingNet * yearsAfterPayback) - (totalDiscom);
 
             // Step 11: Roof Feasibility
-            let roofNeededSqft;
+            // Step 11: Roof Feasibility
+            let roofNeededSqft = panelCount * settings.panel_area_sqft;
             let roofOk = null;
 
-            if (roof_area_value && roof_area_value > 0) {
-                // User provided area → check eligibility
-                roofNeededSqft = panelCount * settings.panel_area_sqft;
-                roofOk = roofSqft >= roofNeededSqft;
-            } else {
-                // No area given → only recommend required area
-                roofNeededSqft = panelCount * 60;
-                roofOk = null;
+            // Convert available roof input to sqft (already done earlier → roofSqft)
+            // Now convert both "needed" and "available" back to user’s selected unit
+            let roofNeededFinal = roofNeededSqft;
+            let roofAvailableFinal = roofSqft;
+
+            switch (roof_area_unit) {
+                case "sqm":
+                    roofNeededFinal = roofNeededSqft / 10.764;
+                    roofAvailableFinal = roofSqft / 10.764;
+                    break;
+                case "sqyd":
+                    roofNeededFinal = roofNeededSqft / 9;
+                    roofAvailableFinal = roofSqft / 9;
+                    break;
+                case "ground":
+                    roofNeededFinal = roofNeededSqft / 2400;
+                    roofAvailableFinal = roofSqft / 2400;
+                    break;
+                case "cent":
+                    roofNeededFinal = roofNeededSqft / 435.6;
+                    roofAvailableFinal = roofSqft / 435.6;
+                    break;
+                default:
+                    // sqft → already fine
+                    break;
             }
+
+            // Check feasibility
+            if (roof_area_value && roof_area_value > 0) {
+                roofOk = roofAvailableFinal >= roofNeededFinal;
+            }
+
 
             // Disclaimer (residential vs RWA)
             const disclaimer = is_rwa
@@ -365,8 +389,9 @@ module.exports = {
                 years_after_payback: yearsAfterPayback,
                 net_gain_after_payback: netGainAfterPayback,
                 payback_years: paybackYears,
-                roof_needed_sqft: roofNeededSqft,
-                roof_area_available: roofSqft,
+                roof_needed_sqft: roofNeededFinal,
+                roof_area_available: roofAvailableFinal,
+                roof_area_unit: roof_area_unit,
                 roof_fits: roofOk,
                 rwa_per_house_cap_kw: rwa_per_house_cap_kw,
                 disclaimer
