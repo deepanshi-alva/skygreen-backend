@@ -847,6 +847,7 @@ export interface ApiCalculatorSettingCalculatorSetting
     panel_watt_w: Attribute.BigInteger & Attribute.DefaultTo<'575'>;
     panel_area_sqft: Attribute.BigInteger & Attribute.DefaultTo<'26'>;
     topcon_575_daily_generation: Attribute.Float & Attribute.DefaultTo<3.22>;
+    rwa_cost_inr_per_kw: Attribute.BigInteger;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

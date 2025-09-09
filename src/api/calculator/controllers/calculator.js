@@ -246,77 +246,46 @@ module.exports = {
                 // RWA / GHS Path
                 // ----------------------
             } else {
-                switch (sizing_method) {
-                    case "proposed":
-                        recommendedKw = proposed_capacity_kw;
-                        break;
-                    case "sanctioned_total":
-                        recommendedKw = society_sanctioned_load_kw;
-                        break;
-                    case "sanctioned_per_house":
-                        recommendedKw = per_house_sanctioned_load_kw * num_houses;
-                        break;
-                    case "bill":
-                        monthlyUnits = monthly_bill_inr / tariff_inr_per_kwh;
-                        monthlySpendInr = monthly_bill_inr;
-                        // finalDcKw = monthlyUnits / (settings.solar_hours_per_day * 30);
-                        recommendedKw = monthlyUnits / (settings.solar_hours_per_day * 30);
-                        break;
-                    case "units":
-                        monthlyUnits = monthly_units_kwh;
-                        monthlySpendInr = monthly_units_kwh * tariff_inr_per_kwh;
-                        recommendedKw = monthlyUnits / (settings.solar_hours_per_day * 30);
-                        break;
-                    default:
-                        return ctx.badRequest("Invalid sizing_method for RWA");
+                const candidateCaps = [];
+
+                if (proposed_capacity_kw > 0) {
+                    // 👉 If user gave a proposed capacity, always respect that
+                    recommendedKw = proposed_capacity_kw;
+                } else {
+                    if (society_sanctioned_load_kw > 0) candidateCaps.push(society_sanctioned_load_kw);
+                    if (per_house_sanctioned_load_kw > 0) candidateCaps.push(per_house_sanctioned_load_kw * num_houses);
+
+                    if (candidateCaps.length > 0) {
+                        // 👉 If no proposed, fallback to the larger of society vs per-house
+                        recommendedKw = Math.max(...candidateCaps);
+                    } else {
+                        return ctx.badRequest("No valid RWA sizing inputs provided");
+                    }
                 }
 
                 panelCount = Math.ceil((recommendedKw * 1000) / settings.panel_watt_w);
                 finalDcKw = panelCount * (settings.panel_watt_w / 1000);
                 sanctionedLoadMustBe = Math.ceil(finalDcKw);
-                dailyUnit = monthlyUnits / 30;
             }
 
+
             let totalSpend = monthlySpendInr * 12 * 30;
-            // // Step 1: Recommended KW (only from bill or units)
-            // let monthlyUnits = 0;
-            // if (sizing_method === "bill") {
-            //     monthlyUnits = monthly_bill_inr / tariff_inr_per_kwh;
-            // } else if (sizing_method === "units") {
-            //     monthlyUnits = monthly_units_kwh;
-            // } else {
-            //     return ctx.badRequest("Invalid sizing method. Use 'bill' or 'units'.");
-            // }
-
-            // const dailyUnit = monthlyUnits / 30;
-
-            // // Step 2: Recommended kw
-            // console.log("this is the monthlyunit", monthlyUnits)
-            // const recommendedKw = monthlyUnits / (settings.solar_hours_per_day * 30);
-            // console.log("this is the recommended kw", recommendedKw);
-
-            // // Step 3: Panel Count
-            // const panelCount = Math.ceil(recommendedKw * 1000 / settings.panel_watt_w);
-            // console.log("this is the panelCount", panelCount);
-
-            // // Step 4: Final DC KW SDC
-            // const finalDcKw = panelCount * (settings.panel_watt_w / 1000);
-            // const sanctionedLoadMustBe = Math.ceil(finalDcKw);
-            // console.log("this is the sdc", finalDcKw);
 
             // Step 5: Subsidy Eligible KW
             const subsidyResult = is_rwa
-                ? rwaSubsidyCalc(finalDcKw, stateData, settings.cost_inr_per_kw, num_houses, recommendedKw)
+                ? rwaSubsidyCalc(finalDcKw, stateData, settings.rwa_cost_inr_per_kw, num_houses, recommendedKw)
                 : subsidyCalc(finalDcKw, stateData, settings.cost_inr_per_kw);
 
             const { central: centralSubsidyInr, state: stateSubsidyInr, total: totalSubsidyInr, eligibleKw } = subsidyResult;
 
             // Step 7: Costs
-            const grossCostInr = finalDcKw * settings.cost_inr_per_kw;
+            const systemCostPerKw = is_rwa ? settings.rwa_cost_inr_per_kw : settings.cost_inr_per_kw;
+            const grossCostInr = panelCount * systemCostPerKw;
             const netCostInr = Math.max(grossCostInr - totalSubsidyInr, 0);
 
             // Step 8: Generation
-            const dailyGen = settings.topcon_575_daily_generation * panelCount;
+            console.log("this is the recommended system", recommendedKw)
+            const dailyGen = settings.topcon_575_daily_generation * recommendedKw;
             const monthlyGen = dailyGen * 30;
             const annualGen = monthlyGen * 12;
             const lifetimeGen = annualGen * (settings.lifetime_years - (settings.degradation_pct_per_year / 100 * settings.lifetime_years));
@@ -329,7 +298,7 @@ module.exports = {
             // Discom charge
             const discomCharge = 200;
             const annualDiscom = discomCharge * 12;
-            const totalDiscom = annualDiscom*30;
+            const totalDiscom = annualDiscom * 30;
             console.log("this is the total discom", totalDiscom)
 
             // Net savings per year after discom
@@ -342,7 +311,7 @@ module.exports = {
             const yearsAfterPayback = Math.max(settings.lifetime_years - Math.ceil(paybackYears), 0);
 
             // Net gain after payback = savings in remaining years
-            const netGainAfterPayback = (annualSavingNet * yearsAfterPayback)-(totalDiscom);
+            const netGainAfterPayback = (annualSavingNet * yearsAfterPayback) - (totalDiscom);
 
             // Step 11: Roof Feasibility
             let roofNeededSqft;

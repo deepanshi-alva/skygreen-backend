@@ -39,6 +39,9 @@
     "topcon_575_daily_generation": {
       "type": "float",
       "default": 3.22
+    },
+    "rwa_cost_inr_per_kw": {
+      "type": "biginteger"
     }
   }
 }
