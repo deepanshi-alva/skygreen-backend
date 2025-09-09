@@ -280,12 +280,12 @@ module.exports = {
 
             // Step 7: Costs
             const systemCostPerKw = is_rwa ? settings.rwa_cost_inr_per_kw : settings.cost_inr_per_kw;
-            const grossCostInr = panelCount * systemCostPerKw;
+            const grossCostInr = recommendedKw * systemCostPerKw;
             const netCostInr = Math.max(grossCostInr - totalSubsidyInr, 0);
 
             // Step 8: Generation
             console.log("this is the recommended system", recommendedKw)
-            const dailyGen = settings.topcon_575_daily_generation * recommendedKw;
+            const dailyGen = settings.topcon_575_daily_generation * panelCount;
             const monthlyGen = dailyGen * 30;
             const annualGen = monthlyGen * 12;
             const lifetimeGen = annualGen * (settings.lifetime_years - (settings.degradation_pct_per_year / 100 * settings.lifetime_years));
