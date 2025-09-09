@@ -207,6 +207,9 @@ module.exports = {
             const stateData = stateDataArr[0];
             // console.log("this is the state data", stateData);
 
+            let rwa_per_house_cap_kw = stateData.rwa_per_house_cap_kw;
+            console.log("this is the rwa per house cap kw", rwa_per_house_cap_kw)
+
             // Convert roof area to sqft
             let roofSqft = roof_area_value;
             if (roof_area_unit === "sqm") roofSqft = roofSqft * 10.764;
@@ -265,7 +268,7 @@ module.exports = {
 
                 panelCount = Math.ceil((recommendedKw * 1000) / settings.panel_watt_w);
                 finalDcKw = panelCount * (settings.panel_watt_w / 1000);
-                sanctionedLoadMustBe = Math.ceil(finalDcKw);
+                sanctionedLoadMustBe = Math.ceil(recommendedKw);
             }
 
 
@@ -365,6 +368,7 @@ module.exports = {
                 roof_needed_sqft: roofNeededSqft,
                 roof_area_available: roofSqft,
                 roof_fits: roofOk,
+                rwa_per_house_cap_kw: rwa_per_house_cap_kw,
                 disclaimer
             });
         } catch (err) {
