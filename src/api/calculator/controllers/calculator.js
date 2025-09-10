@@ -158,6 +158,7 @@ const rwaSubsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw, numHouses, rec
             break;
         case "percent_of_cost":
             state = eligibleKw * benchmarkCostPerKw * ((rwa_state_topup || 20) / 100);
+            console.log("this si the percent of cost ", benchmarkCostPerKw, eligibleKw, ((rwa_state_topup || 20) / 100));
             break;
         case "fixed_per_house":
             console.log("we are in the switch statement and in fixed per house thing");
