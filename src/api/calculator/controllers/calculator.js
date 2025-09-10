@@ -1,3 +1,5 @@
+const state = require("../../state/controllers/state");
+
 const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     console.log("................", finalDcKw, stateData, benchmarkCostPerKw)
     const { one_kw_rate, three_kw_rate, total_subsidy, state_top_up, name } = stateData;
@@ -129,7 +131,7 @@ const rwaSubsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw, numHouses, rec
         rwa_per_house_cap_kw,
         rwa_total_cap_kw,
         rwa_mode,
-        rwa_state_top_up
+        rwa_state_topup
     } = stateData;
 
     if (!rwa_enabled || rwa_mode === "none") {
@@ -138,7 +140,8 @@ const rwaSubsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw, numHouses, rec
 
     // Eligible capacity
     const eligibleKw = Math.min(finalDcKw, recommendedKw, numHouses * rwa_per_house_cap_kw, rwa_total_cap_kw);
-    console.log("this is the subsidy eligible for", eligibleKw, recommendedKw, finalDcKw, numHouses * rwa_per_house_cap_kw, rwa_total_cap_kw)
+    console.log("this is the subsidy eligible for", eligibleKw, recommendedKw, finalDcKw, numHouses * rwa_per_house_cap_kw, rwa_total_cap_kw);
+    console.log("eligible kw", eligibleKw)
 
     let central = 0, state = 0;
 
@@ -151,17 +154,19 @@ const rwaSubsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw, numHouses, rec
             state = 0;
             break;
         case "flat_per_kw":
-            state = eligibleKw * (rwa_state_top_up || 0);
+            state = eligibleKw * (rwa_state_topup || 0);
             break;
         case "percent_of_cost":
-            state = eligibleKw * benchmarkCostPerKw * ((rwa_state_top_up || 20) / 100);
+            state = eligibleKw * benchmarkCostPerKw * ((rwa_state_topup || 20) / 100);
             break;
         case "fixed_per_house":
-            state = numHouses * (rwa_state_top_up || 0);
+            console.log("we are in the switch statement and in fixed per house thing");
+            state = numHouses * (rwa_state_topup || 0);
+            console.log("state subsidy in case of the fixed per house is", state);
             break;
         case "state_only":
             central = 0;
-            state = eligibleKw * benchmarkCostPerKw * ((rwa_state_top_up || 20) / 100);
+            state = eligibleKw * benchmarkCostPerKw * ((rwa_state_topup || 20) / 100);
             break;
     }
 
@@ -184,7 +189,8 @@ module.exports = {
                 num_houses = 1,
                 proposed_capacity_kw = 0,
                 society_sanctioned_load_kw = 0,
-                per_house_sanctioned_load_kw = 0
+                per_house_sanctioned_load_kw = 0,
+                plant_size_kw = 0,
             } = ctx.request.body;
 
             // Fetch calculator settings (includes subsidy values)
@@ -199,16 +205,22 @@ module.exports = {
                 "api::state.state",
                 {
                     filters: { name: state_name },
+                    populate: {
+                        disclaimers: true,
+                        rwa_disclaimer: true,
+                        important_notes: true,   // ✅ explicitly populate component
+                    },
                 }
             );
             if (!stateDataArr || stateDataArr.length === 0) {
                 return ctx.badRequest(`State ${state_name} not found`);
             }
             const stateData = stateDataArr[0];
-            // console.log("this is the state data", stateData);
+            console.log("this is the state data", stateData);
 
             let rwa_per_house_cap_kw = stateData.rwa_per_house_cap_kw;
             console.log("this is the rwa per house cap kw", rwa_per_house_cap_kw)
+            let rwa_overall_subsidy_cap = stateData.rwa_total_cap_kw;
 
             // Convert roof area to sqft
             let roofSqft = roof_area_value;
@@ -225,10 +237,20 @@ module.exports = {
             let dailyUnit = 0;
             let monthlySpendInr = 0;
 
-            // ----------------------
-            // Residential Path
-            // ----------------------
-            if (!is_rwa) {
+            if (sizing_method === "plant_size") {
+                if (plant_size_kw <= 0) {
+                    return ctx.badRequest("Plant size (kW) must be provided in plant_size mode");
+                }
+
+                recommendedKw = plant_size_kw;
+
+                panelCount = Math.ceil((recommendedKw * 1000) / settings.panel_watt_w);
+                finalDcKw = panelCount * (settings.panel_watt_w / 1000);
+                sanctionedLoadMustBe = Math.ceil(finalDcKw);
+
+                monthlyUnits = 0;
+                monthlySpendInr = 0;
+            } else if (!is_rwa) {
                 if (sizing_method === "bill") {
                     monthlyUnits = monthly_bill_inr / tariff_inr_per_kwh;
                     monthlySpendInr = monthly_bill_inr;
@@ -279,7 +301,9 @@ module.exports = {
                 ? rwaSubsidyCalc(finalDcKw, stateData, settings.rwa_cost_inr_per_kw, num_houses, recommendedKw)
                 : subsidyCalc(finalDcKw, stateData, settings.cost_inr_per_kw);
 
+
             const { central: centralSubsidyInr, state: stateSubsidyInr, total: totalSubsidyInr, eligibleKw } = subsidyResult;
+            console.log("this is the subsidy data", subsidyResult)
 
             // Step 7: Costs
             const systemCostPerKw = is_rwa ? settings.rwa_cost_inr_per_kw : settings.cost_inr_per_kw;
@@ -359,6 +383,9 @@ module.exports = {
                 ? stateData.rwa_disclaimer
                 : stateData.disclaimers;
 
+            const importantNotes = stateData.important_notes;
+            console.log("this is the important notes of the state", importantNotes)
+
 
             ctx.send({
                 state: state_name,
@@ -394,6 +421,8 @@ module.exports = {
                 roof_area_unit: roof_area_unit,
                 roof_fits: roofOk,
                 rwa_per_house_cap_kw: rwa_per_house_cap_kw,
+                rwa_overall_subsidy_cap: rwa_overall_subsidy_cap,
+                importantNotes,
                 disclaimer
             });
         } catch (err) {

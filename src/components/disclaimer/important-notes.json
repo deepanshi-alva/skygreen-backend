@@ -1,0 +1,13 @@
+{
+  "collectionName": "components_disclaimer_important_notes",
+  "info": {
+    "displayName": "Important Notes",
+    "description": ""
+  },
+  "options": {},
+  "attributes": {
+    "notes": {
+      "type": "text"
+    }
+  }
+}

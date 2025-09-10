@@ -135,6 +135,17 @@
           "localized": true
         }
       }
+    },
+    "important_notes": {
+      "displayName": "Important Notes",
+      "type": "component",
+      "repeatable": true,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "component": "disclaimer.important-notes"
     }
   }
 }
