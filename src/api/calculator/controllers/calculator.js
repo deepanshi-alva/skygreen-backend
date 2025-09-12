@@ -226,7 +226,7 @@ module.exports = {
             // Convert roof area to sqft
             let roofSqft = roof_area_value;
             if (roof_area_unit === "sqm") roofSqft = roofSqft * 10.764;
-            if (roof_area_unit === "sqyd") roofSqft = roofSqft * 9;
+            if (roof_area_unit === "sqyd/gaj") roofSqft = roofSqft * 9;
             if (roof_area_unit === "ground") roofSqft = roofSqft * 2400;
             if (roof_area_unit === "cent") roofSqft = roofSqft * 435.6;
 
@@ -356,7 +356,7 @@ module.exports = {
                     roofNeededFinal = roofNeededSqft / 10.764;
                     roofAvailableFinal = roofSqft / 10.764;
                     break;
-                case "sqyd":
+                case "sqyd/gaj":
                     roofNeededFinal = roofNeededSqft / 9;
                     roofAvailableFinal = roofSqft / 9;
                     break;
