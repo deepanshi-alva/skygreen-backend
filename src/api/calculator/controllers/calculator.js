@@ -129,6 +129,7 @@ const rwaSubsidyCalc = (
   finalDcKw,
   stateData,
   benchmarkCostPerKw,
+  perHouseSanctionedLoad,
   numHouses,
   recommendedKw
 ) => {
@@ -149,7 +150,7 @@ const rwaSubsidyCalc = (
   const eligibleKw = Math.min(
     finalDcKw,
     recommendedKw,
-    numHouses * rwa_per_house_cap_kw,
+    numHouses * Math.min(perHouseSanctionedLoad, rwa_per_house_cap_kw),
     rwa_total_cap_kw
   );
   console.log(
@@ -335,6 +336,7 @@ module.exports = {
             finalDcKw,
             stateData,
             settings.rwa_cost_inr_per_kw,
+            per_house_sanctioned_load_kw,
             num_houses,
             recommendedKw
           )
