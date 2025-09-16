@@ -1066,6 +1066,7 @@ export interface ApiStateState extends Schema.CollectionType {
         'cfa_only',
         'flat_per_kw',
         'percent_of_cost',
+        'percent_of_cost_cfa_only',
         'fixed_per_house',
         'state_only'
       ]
