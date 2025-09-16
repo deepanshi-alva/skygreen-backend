@@ -455,6 +455,7 @@ module.exports = {
         central_subsidy_inr: centralSubsidyInr,
         state_subsidy: stateSubsidyInr,
         total_subsidy: totalSubsidyInr,
+        eligibleKw: eligibleKw,
         gross_cost_inr: grossCostInr,
         net_cost_inr: netCostInr,
         daily_gen_kwh: dailyGen,
