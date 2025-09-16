@@ -84,16 +84,17 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     const grossCost = finalDcKw * benchmarkCostPerKw;
 
     if (finalDcKw <= 3) {
-      state = grossCost * 0.4; // 40% of system cost
+      central = grossCost * 0.4; // 40% of system cost
       // cap at 46,920 for 3 kW
-      if (finalDcKw === 3) state = Math.min(state, 46920);
+      if (finalDcKw === 3) central = Math.min(central, 46920);
     } else if (finalDcKw > 3 && finalDcKw <= 10) {
       const first3 = 3 * benchmarkCostPerKw * 0.4;
       const rest = (finalDcKw - 3) * benchmarkCostPerKw * 0.2;
-      state = first3 + rest;
+      central = first3 + rest;
 
       // cap at ~96,000 for 10 kW
-      if (finalDcKw === 10) state = Math.min(state, 96044);
+      if (finalDcKw === 10) central = Math.min(state, 96044);
+      state=0;
     }
   } else if (
     ["dadra & nagar haveli & daman & diu", "dnhdd"].includes(name.toLowerCase())
