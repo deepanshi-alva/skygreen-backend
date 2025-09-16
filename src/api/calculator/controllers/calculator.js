@@ -113,6 +113,24 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     }
 
     state=0;
+  } else if (name.toLowerCase() === "telangana") {
+    // --- State subsidy percentage-based ---
+    const grossCost = finalDcKw * benchmarkCostPerKw;
+
+    if (finalDcKw <= 3) {
+      central = grossCost * 0.4; // 40% of system cost
+      // cap at 46,920 for 3 kW
+      if (finalDcKw === 3) central = Math.min(central, 46920);
+    } else if (finalDcKw > 3 && finalDcKw <= 10) {
+      const first3 = 3 * benchmarkCostPerKw * 0.4;
+      const rest = (finalDcKw - 3) * benchmarkCostPerKw * 0.2;
+      central = first3 + rest;
+
+      // cap at ~96,000 for 10 kW
+      if (finalDcKw > 10) central = Math.min(central, 96044);
+    }
+
+    state=0;
   } else if (
     ["dadra & nagar haveli & daman & diu", "dnhdd"].includes(name.toLowerCase())
   ) {
