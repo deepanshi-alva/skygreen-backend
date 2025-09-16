@@ -1,7 +1,7 @@
 const state = require("../../state/controllers/state");
 
 const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
-  console.log("................", finalDcKw, stateData, benchmarkCostPerKw);
+  // console.log("................", finalDcKw, stateData, benchmarkCostPerKw);
   const { one_kw_rate, three_kw_rate, total_subsidy, state_top_up, name } =
     stateData;
   const subsidyEligibleKw = Math.min(finalDcKw, 3);
@@ -47,6 +47,19 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     state = subsidyEligibleKw * benchmarkCostPerKw * 0.3;
   } else if (name.toLowerCase() === "haryana") {
     // Haryana = % of benchmark (40% up to 3 kW, then 20%)
+    if (finalDcKw <= 3) {
+      central = finalDcKw * benchmarkCostPerKw * 0.4;
+    } else if (finalDcKw > 3 && finalDcKw <= 10) {
+      central =
+        3 * benchmarkCostPerKw * 0.4 +
+        (finalDcKw - 3) * benchmarkCostPerKw * 0.2;
+    } else {
+      central = finalDcKw * benchmarkCostPerKw * 0.2;
+    }
+    state = 0; // Haryana has no extra state subsidy
+  }else if (name.toLowerCase()==="chandigarh") {
+    // Haryana = % of benchmark (40% up to 3 kW, then 20%)
+    console.log("we entered into the chandigarh switch statement")
     if (finalDcKw <= 3) {
       central = finalDcKw * benchmarkCostPerKw * 0.4;
     } else if (finalDcKw > 3 && finalDcKw <= 10) {
@@ -189,15 +202,15 @@ const rwaSubsidyCalc = (
     numHouses * Math.min(perHouseSanctionedLoad, rwa_per_house_cap_kw),
     rwa_total_cap_kw
   );
-  console.log(
-    "this is the subsidy eligible for",
-    eligibleKw,
-    recommendedKw,
-    finalDcKw,
-    numHouses * rwa_per_house_cap_kw,
-    rwa_total_cap_kw
-  );
-  console.log("eligible kw", eligibleKw);
+  // console.log(
+  //   "this is the subsidy eligible for",
+  //   eligibleKw,
+  //   recommendedKw,
+  //   finalDcKw,
+  //   numHouses * rwa_per_house_cap_kw,
+  //   rwa_total_cap_kw
+  // );
+  // console.log("eligible kw", eligibleKw);
 
   let central = 0,
     state = 0;
@@ -215,23 +228,23 @@ const rwaSubsidyCalc = (
       break;
     case "percent_of_cost":
       state = eligibleKw * benchmarkCostPerKw * ((rwa_state_topup || 20) / 100);
-      console.log(
-        "this si the percent of cost ",
-        benchmarkCostPerKw,
-        eligibleKw,
-        (rwa_state_topup || 20) / 100
-      );
+      // console.log(
+      //   "this si the percent of cost ",
+      //   benchmarkCostPerKw,
+      //   eligibleKw,
+      //   (rwa_state_topup || 20) / 100
+      // );
       break;
     case "percent_of_cost_cfa_only":
       central = eligibleKw * benchmarkCostPerKw * ((rwa_state_topup || 20) / 100);
       state=0;
       break;
     case "fixed_per_house":
-      console.log(
-        "we are in the switch statement and in fixed per house thing"
-      );
+      // console.log(
+      //   "we are in the switch statement and in fixed per house thing"
+      // );
       state = numHouses * (rwa_state_topup || 0);
-      console.log("state subsidy in case of the fixed per house is", state);
+      // console.log("state subsidy in case of the fixed per house is", state);
       break;
     case "state_only":
       central = 0;
@@ -285,10 +298,10 @@ module.exports = {
         return ctx.badRequest(`State ${state_name} not found`);
       }
       const stateData = stateDataArr[0];
-      console.log("this is the state data", stateData);
+      // console.log("this is the state data", stateData);
 
       let rwa_per_house_cap_kw = stateData.rwa_per_house_cap_kw;
-      console.log("this is the rwa per house cap kw", rwa_per_house_cap_kw);
+      // console.log("this is the rwa per house cap kw", rwa_per_house_cap_kw);
       let rwa_overall_subsidy_cap = stateData.rwa_total_cap_kw;
 
       // Convert roof area to sqft
@@ -398,7 +411,7 @@ module.exports = {
       const netCostInr = Math.max(grossCostInr - totalSubsidyInr, 0);
 
       // Step 8: Generation
-      console.log("this is the recommended system", recommendedKw);
+      // console.log("this is the recommended system", recommendedKw);
       const dailyGen = settings.topcon_575_daily_generation * panelCount;
       const monthlyGen = dailyGen * 30;
       const annualGen = monthlyGen * 12;
@@ -416,7 +429,7 @@ module.exports = {
       const discomCharge = Number(discom_extra_charges) || 200;
       const annualDiscom = discomCharge * 12;
       const totalDiscom = annualDiscom * 30;
-      console.log("this is the total discom", totalDiscom);
+      // console.log("this is the total discom", totalDiscom);
 
       // Net savings per year after discom
       const annualSavingNet = annualSaving;
@@ -477,7 +490,7 @@ module.exports = {
         : stateData.disclaimers;
 
       const importantNotes = stateData.important_notes;
-      console.log("this is the important notes of the state", importantNotes);
+      // console.log("this is the important notes of the state", importantNotes);
 
       ctx.send({
         state: state_name,
