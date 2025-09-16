@@ -45,7 +45,7 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
   ) {
     // State = 30% of benchmark × eligible kW
     state = subsidyEligibleKw * benchmarkCostPerKw * 0.3;
-  } else if (name.toLowerCase() === "haryana") {
+  } else if (name.toLowerCase() === "haryana" || name.toLowerCase()==="chandigarh") {
     // Haryana = % of benchmark (40% up to 3 kW, then 20%)
     if (finalDcKw <= 3) {
       central = finalDcKw * benchmarkCostPerKw * 0.4;
@@ -57,20 +57,7 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
       central = finalDcKw * benchmarkCostPerKw * 0.2;
     }
     state = 0; // Haryana has no extra state subsidy
-  }else if (name.toLowerCase()==="chandigarh") {
-    // Haryana = % of benchmark (40% up to 3 kW, then 20%)
-    console.log("we entered into the chandigarh switch statement")
-    if (finalDcKw <= 3) {
-      central = finalDcKw * benchmarkCostPerKw * 0.4;
-    } else if (finalDcKw > 3 && finalDcKw <= 10) {
-      central =
-        3 * benchmarkCostPerKw * 0.4 +
-        (finalDcKw - 3) * benchmarkCostPerKw * 0.2;
-    } else {
-      central = finalDcKw * benchmarkCostPerKw * 0.2;
-    }
-    state = 0; // Haryana has no extra state subsidy
-  } else if (name.toLowerCase() === "gujarat") {
+  }  else if (name.toLowerCase() === "gujarat") {
     central = 0; // no central CFA allowed
 
     // Residential-only calculation
@@ -92,7 +79,7 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     const topUpPerKw = benchmarkCostPerKw * 0.1;
     state = subsidyEligibleKw * topUpPerKw;
     state = Math.min(state, 60000); // cap safeguard
-  } else if (name.toLowerCase() === "madhya pradesh") {
+  } else if (name.toLowerCase() === "madhya pradesh" || name.toLowerCase() === "telangana" || name.toLowerCase() === "maharashtra") {
     // --- State subsidy percentage-based ---
     const grossCost = finalDcKw * benchmarkCostPerKw;
 
@@ -108,42 +95,6 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
       // cap at ~96,000 for 10 kW
       if (finalDcKw > 10) state = Math.min(state, 96044);
     }
-  } else if (name.toLowerCase() === "maharashtra") {
-    // --- State subsidy percentage-based ---
-    const grossCost = finalDcKw * benchmarkCostPerKw;
-
-    if (finalDcKw <= 3) {
-      central = grossCost * 0.4; // 40% of system cost
-      // cap at 46,920 for 3 kW
-      if (finalDcKw === 3) central = Math.min(central, 46920);
-    } else if (finalDcKw > 3 && finalDcKw <= 10) {
-      const first3 = 3 * benchmarkCostPerKw * 0.4;
-      const rest = (finalDcKw - 3) * benchmarkCostPerKw * 0.2;
-      central = first3 + rest;
-
-      // cap at ~96,000 for 10 kW
-      if (finalDcKw > 10) central = Math.min(central, 96044);
-    }
-
-    state=0;
-  } else if (name.toLowerCase() === "telangana") {
-    // --- State subsidy percentage-based ---
-    const grossCost = finalDcKw * benchmarkCostPerKw;
-
-    if (finalDcKw <= 3) {
-      central = grossCost * 0.4; // 40% of system cost
-      // cap at 46,920 for 3 kW
-      if (finalDcKw === 3) central = Math.min(central, 46920);
-    } else if (finalDcKw > 3 && finalDcKw <= 10) {
-      const first3 = 3 * benchmarkCostPerKw * 0.4;
-      const rest = (finalDcKw - 3) * benchmarkCostPerKw * 0.2;
-      central = first3 + rest;
-
-      // cap at ~96,000 for 10 kW
-      if (finalDcKw > 10) central = Math.min(central, 96044);
-    }
-
-    state=0;
   } else if (
     ["dadra & nagar haveli & daman & diu", "dnhdd"].includes(name.toLowerCase())
   ) {
