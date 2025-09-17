@@ -1,5 +1,291 @@
 const state = require("../../state/controllers/state");
 
+/* ----------------- Helper: Suggest SKU Options ----------------- */
+function suggestSkuOptions(finalDcKw) {
+  const availableInverters = [
+    1, 2, 3, 4, 5, 6, 7.5, 10, 15, 20, 25, 30, 50, 75, 100,
+  ];
+
+  // Step 1: get all valid inverter options
+  const valid = availableInverters
+    .map((inv) => {
+      const ratio = finalDcKw / inv;
+      if (ratio >= 0.8 && ratio <= 1.2) {
+        return {
+          system_kw: finalDcKw,
+          inverter_kw: inv,
+          dc_ac_ratio: Number(ratio.toFixed(2)),
+          bus_voltage: inv <= 2 ? 24 : inv <= 7.5 ? 48 : 96,
+          phase: inv > 5 ? "Three-phase" : "Single-phase",
+          note:
+            ratio === 1
+              ? "Perfect match"
+              : ratio > 1
+              ? "Over-paneling (clipping possible)"
+              : "Under-paneling (future expansion room)",
+        };
+      }
+      return null;
+    })
+    .filter(Boolean);
+
+  if (valid.length === 0) return { nearestSku: null, widerSku: null };
+
+  // Step 2: nearest = closest to ratio = 1
+  let nearestSku = valid.reduce((prev, curr) => {
+    const prevDiff = Math.abs(1 - prev.dc_ac_ratio);
+    const currDiff = Math.abs(1 - curr.dc_ac_ratio);
+    return currDiff < prevDiff ? curr : prev;
+  });
+
+  // Step 3: wider = the next higher inverter in valid list
+  let widerSku = valid.find((opt) => opt.inverter_kw > nearestSku.inverter_kw);
+
+  return { nearestSku, widerSku, allValid: valid };
+}
+
+/* ----------------- Inverter Options ----------------- */
+function getInverterOptions(finalDcKw) {
+  const availableInverters = [
+    1, 2, 3, 4, 5, 6, 7.5, 10, 15, 20, 25, 30, 50, 75, 100,
+  ];
+  let options = [];
+
+  availableInverters.forEach((inv) => {
+    const ratio = finalDcKw / inv;
+    if (ratio >= 0.8 && ratio <= 1.2) {
+      options.push({
+        inverter_size_kw: inv,
+        dc_ac_ratio: ratio.toFixed(2),
+        bus_voltage: inv <= 2 ? 24 : inv <= 7.5 ? 48 : 96,
+        phase: inv > 5 ? "Three-phase" : "Single-phase",
+        note:
+          ratio === 1
+            ? "Perfect match, zero clipping"
+            : ratio > 1
+            ? "Over-paneling (clipping possible)"
+            : "Under-paneling (future expansion room)",
+      });
+    }
+  });
+
+  return options;
+}
+
+/* ----------------- String Design ----------------- */
+function getStringDesign(panelCount) {
+  const vocCold = 56.8; // Voc per panel
+  const vmp = 43.82; // Vmp per panel
+  const isc = 13.79; // Isc per panel
+
+  const maxInverterVoc = 1000;
+  const mpptWindow = [200, 800];
+  const mpptCurrentLimit = 30;
+
+  if (!panelCount || panelCount <= 0) {
+    return { single_mppt: [], dual_mppt: [] };
+  }
+
+  // ---- Single MPPT ----
+  let singleMppt;
+  if (panelCount > 16) {
+    singleMppt = {
+      mppt_mode: "single",
+      message: "❌ Not feasible. Use dual MPPT or increase inverter size.",
+    };
+  } else {
+    const vocTotal = panelCount * vocCold;
+    const vmpTotal = panelCount * vmp;
+    const iscTotal = isc;
+    const maxParallel = Math.floor(mpptCurrentLimit / iscTotal);
+
+    singleMppt = {
+      mppt_mode: "single",
+      panels_per_string: panelCount,
+      strings_used: 1,
+      panels_connected: panelCount,
+      voc_total: vocTotal.toFixed(1),
+      vmp_total: vmpTotal.toFixed(1),
+      isc_total: iscTotal.toFixed(1),
+      max_parallel_strings: maxParallel,
+    };
+  }
+
+  // ---- Dual MPPT ---- (best-fit split)
+  const half = Math.floor(panelCount / 2);
+  const mppt1Panels = half;
+  const mppt2Panels = panelCount - half;
+
+  const dualMppt = [
+    {
+      mppt: 1,
+      panels_per_string: mppt1Panels,
+      voc_total: (mppt1Panels * vocCold).toFixed(1),
+      vmp_total: (mppt1Panels * vmp).toFixed(1),
+      isc_total: isc.toFixed(1),
+    },
+    {
+      mppt: 2,
+      panels_per_string: mppt2Panels,
+      voc_total: (mppt2Panels * vocCold).toFixed(1),
+      vmp_total: (mppt2Panels * vmp).toFixed(1),
+      isc_total: isc.toFixed(1),
+    },
+  ];
+
+  return { single_mppt: singleMppt, dual_mppt: dualMppt };
+}
+
+/* ----------------- Battery Options with Series/Parallel ----------------- */
+function getBatteryOptions(finalDcKw, settings, inverterKw) {
+  const psh = settings.solar_hours_per_day || 5.5;
+  const eSolar = finalDcKw * psh;
+  const eCharge = eSolar * 0.9; // 90% charging efficiency
+
+  // Bus voltage decide based on inverter size
+  let busV = 48;
+  if (inverterKw <= 2) busV = 24;
+  else if (inverterKw > 7.5) busV = 96;
+
+  let options = [];
+
+  // Helper: backup hours calc
+  function backupHours(usableKwh) {
+    return {
+      essentials_1_5kw: (usableKwh / 1.5).toFixed(1),
+      one_ac_3kw: (usableKwh / 3).toFixed(1),
+      two_acs_4_5kw: (usableKwh / 4.5).toFixed(1),
+    };
+  }
+
+  // Helper: best fit recommendation
+  function bestFit(skus, eCharge) {
+    if (skus.length === 0) return "No suitable SKU found.";
+    let closest = skus.reduce((prev, curr) => {
+      return Math.abs(parseFloat(curr.usable_kwh) - eCharge) <
+        Math.abs(parseFloat(prev.usable_kwh) - eCharge)
+        ? curr
+        : prev;
+    });
+    return `Best fit: ${closest.type} ${closest.ah}Ah (${closest.nominal_kwh} kWh, usable ${closest.usable_kwh} kWh).`;
+  }
+
+  // Helper: compute series-parallel requirement
+  function computeSeriesParallel(ah, blockV, busV, requiredAh) {
+    const seriesCount = busV / blockV;
+    const parallelCount = Math.ceil(requiredAh / ah);
+    return {
+      series: seriesCount,
+      parallel: parallelCount,
+      total_blocks: seriesCount * parallelCount,
+    };
+  }
+
+  // --------- Lithium Batteries ---------
+  {
+    const dod = 0.9,
+      eff = 0.95;
+    const eBatMax = eCharge / (dod * eff);
+    const ahMax = (eBatMax * 1000) / busV;
+    const eBatMin = eBatMax * 0.4;
+    const ahMin = (eBatMin * 1000) / busV;
+
+    // 12V lithium packs
+    const skuList12v = [100, 200].map((ah) => {
+      const eNominal = (12 * ah) / 1000;
+      const eUsable = eNominal * dod * eff;
+      const config = computeSeriesParallel(ah, 12, busV, ahMax);
+      return {
+        type: "12V block",
+        ah,
+        nominal_kwh: eNominal.toFixed(1),
+        usable_kwh: eUsable.toFixed(1),
+        backup_hours: backupHours(eUsable),
+        series_parallel_config: config,
+      };
+    });
+
+    // 48V direct lithium modules
+    const skuList48v = [100, 200, 400].map((ah) => {
+      const eNominal = (48 * ah) / 1000;
+      const eUsable = eNominal * dod * eff;
+      const series = busV / 48;
+      const parallel = Math.ceil(ahMax / ah);
+      return {
+        type: "48V module",
+        ah,
+        nominal_kwh: eNominal.toFixed(1),
+        usable_kwh: eUsable.toFixed(1),
+        backup_hours: backupHours(eUsable),
+        series_parallel_config: {
+          series,
+          parallel,
+          total_blocks: series * parallel,
+        },
+      };
+    });
+
+    options.push({
+      type: "Lithium",
+      bus_voltage: busV,
+      min_recommended: { kwh: eBatMin.toFixed(1), ah: ahMin.toFixed(0) },
+      max_recommended: { kwh: eBatMax.toFixed(1), ah: ahMax.toFixed(0) },
+      connection: {
+        "12v_series_parallel": {
+          note: "Use 12V lithium packs in series-parallel to reach inverter bus voltage",
+          skus: skuList12v,
+          best_fit_recommendation: bestFit(skuList12v, eCharge),
+        },
+        "48v_direct_modules": {
+          note: "Premium rack ESS packs, directly parallel expandable",
+          skus: skuList48v,
+          best_fit_recommendation: bestFit(skuList48v, eCharge),
+        },
+      },
+    });
+  }
+
+  // --------- Tubular Batteries ---------
+  {
+    const dod = 0.5,
+      eff = 0.85;
+    const eBatMax = eCharge / (dod * eff);
+    const ahMax = (eBatMax * 1000) / busV;
+    const eBatMin = eBatMax * 0.4;
+    const ahMin = (eBatMin * 1000) / busV;
+
+    const skuList12v = [150, 200].map((ah) => {
+      const eNominal = (12 * ah) / 1000;
+      const eUsable = eNominal * dod * eff;
+      const config = computeSeriesParallel(ah, 12, busV, ahMax);
+      return {
+        type: "12V block",
+        ah,
+        nominal_kwh: eNominal.toFixed(1),
+        usable_kwh: eUsable.toFixed(1),
+        backup_hours: backupHours(eUsable),
+        series_parallel_config: config,
+      };
+    });
+
+    options.push({
+      type: "Tubular",
+      bus_voltage: busV,
+      min_recommended: { kwh: eBatMin.toFixed(1), ah: ahMin.toFixed(0) },
+      max_recommended: { kwh: eBatMax.toFixed(1), ah: ahMax.toFixed(0) },
+      connection: {
+        "12v_series_parallel": {
+          note: "Only 12V tubular blocks available, connect in series-parallel",
+          skus: skuList12v,
+          best_fit_recommendation: bestFit(skuList12v, eCharge),
+        },
+      },
+    });
+  }
+
+  return options;
+}
+
 const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
   // console.log("................", finalDcKw, stateData, benchmarkCostPerKw);
   const { one_kw_rate, three_kw_rate, total_subsidy, state_top_up, name } =
@@ -45,7 +331,10 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
   ) {
     // State = 30% of benchmark × eligible kW
     state = subsidyEligibleKw * benchmarkCostPerKw * 0.3;
-  } else if (name.toLowerCase() === "haryana" || name.toLowerCase()==="chandigarh") {
+  } else if (
+    name.toLowerCase() === "haryana" ||
+    name.toLowerCase() === "chandigarh"
+  ) {
     // Haryana = % of benchmark (40% up to 3 kW, then 20%)
     if (finalDcKw <= 3) {
       central = finalDcKw * benchmarkCostPerKw * 0.4;
@@ -57,7 +346,7 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
       central = finalDcKw * benchmarkCostPerKw * 0.2;
     }
     state = 0; // Haryana has no extra state subsidy
-  }  else if (name.toLowerCase() === "gujarat") {
+  } else if (name.toLowerCase() === "gujarat") {
     central = 0; // no central CFA allowed
 
     // Residential-only calculation
@@ -79,7 +368,11 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     const topUpPerKw = benchmarkCostPerKw * 0.1;
     state = subsidyEligibleKw * topUpPerKw;
     state = Math.min(state, 60000); // cap safeguard
-  } else if (name.toLowerCase() === "madhya pradesh" || name.toLowerCase() === "telangana" || name.toLowerCase() === "maharashtra") {
+  } else if (
+    name.toLowerCase() === "madhya pradesh" ||
+    name.toLowerCase() === "telangana" ||
+    name.toLowerCase() === "maharashtra"
+  ) {
     // --- State subsidy percentage-based ---
     const grossCost = finalDcKw * benchmarkCostPerKw;
 
@@ -187,8 +480,9 @@ const rwaSubsidyCalc = (
       // );
       break;
     case "percent_of_cost_cfa_only":
-      central = eligibleKw * benchmarkCostPerKw * ((rwa_state_topup || 20) / 100);
-      state=0;
+      central =
+        eligibleKw * benchmarkCostPerKw * ((rwa_state_topup || 20) / 100);
+      state = 0;
       break;
     case "fixed_per_house":
       // console.log(
@@ -333,6 +627,21 @@ module.exports = {
       }
 
       let totalSpend = monthlySpendInr * 12 * 30;
+
+      // Inverter
+      const inverterOptions = getInverterOptions(finalDcKw);
+      const { nearestSku, widerSku, allValid } = suggestSkuOptions(finalDcKw);
+
+      // Stringing
+      const stringDesign = getStringDesign(panelCount);
+
+      // Battery
+      // inverter_kw is taken from nearestSku to decide bus voltage (24/48/96)
+      const batteryOptions = getBatteryOptions(
+        finalDcKw,
+        settings,
+        nearestSku?.inverter_kw || 5
+      );
 
       // Step 5: Subsidy Eligible KW
       const subsidyResult = is_rwa
@@ -479,6 +788,12 @@ module.exports = {
         roof_fits: roofOk,
         rwa_per_house_cap_kw: rwa_per_house_cap_kw,
         rwa_overall_subsidy_cap: rwa_overall_subsidy_cap,
+        inverter_options: inverterOptions,
+        nearest_sku: nearestSku,
+        wider_sku: widerSku,
+        all_valid_sku: allValid,
+        string_design: stringDesign,
+        battery_options: batteryOptions,
         importantNotes,
         disclaimer,
       });
