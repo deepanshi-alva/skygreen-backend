@@ -21,8 +21,8 @@ function suggestSkuOptions(finalDcKw) {
             ratio === 1
               ? "Perfect match"
               : ratio > 1
-              ? "Over-paneling (clipping possible)"
-              : "Under-paneling (future expansion room)",
+                ? "Over-paneling (clipping possible)"
+                : "Under-paneling (future expansion room)",
         };
       }
       return null;
@@ -63,8 +63,8 @@ function getInverterOptions(finalDcKw) {
           ratio === 1
             ? "Perfect match, zero clipping"
             : ratio > 1
-            ? "Over-paneling (clipping possible)"
-            : "Under-paneling (future expansion room)",
+              ? "Over-paneling (clipping possible)"
+              : "Under-paneling (future expansion room)",
       });
     }
   });
@@ -137,14 +137,14 @@ function getStringDesign(panelCount) {
 }
 
 /* ----------------- Battery Options (SKYGREEN Style Output) ----------------- */
-/* ----------------- Battery Options (SKYGREEN Style Output) ----------------- */
+
 function getBatteryOptions(finalDcKw, settings, inverterKw) {
   const psh = settings.solar_hours_per_day || 5.5;
   console.log("this is the finaldcw", finalDcKw)
 
   // Daily solar kWh generation (PR 0.8 + bifacial 1.05)
   const eSolar = finalDcKw * psh * 0.8 * 1.05;
-  console.log("this is the esolar", eSolar,",",finalDcKw, psh);
+  console.log("this is the esolar", eSolar, ",", finalDcKw, psh);
 
   // Energy available for charging after inverter/charging losses
   const eCharge = eSolar * 0.9;
@@ -165,12 +165,22 @@ function getBatteryOptions(finalDcKw, settings, inverterKw) {
     };
   }
 
-  function chargeTime(nominalKwh) {
-    console.log("this is the nominalkwh", nominalKwh);
-    
-    console.log("this is the calculation for the chargetime", (nominalKwh / eCharge * psh).toFixed(1), ",", eCharge, ",", psh);
-    return (nominalKwh / eCharge * psh).toFixed(1); // hrs needed from daily solar
+  // function chargeTime(nominalKwh) {
+  //   console.log("this is the nominalkwh", nominalKwh);
+
+  //   console.log("this is the calculation for the chargetime", (nominalKwh / eCharge * psh).toFixed(1), ",", eCharge, ",", psh);
+  //   return (nominalKwh / eCharge * psh).toFixed(1); // hrs needed from daily solar
+  // }
+
+  function chargeTime(nominalKwh, eff = 0.9) {
+    const effectiveCharge = eCharge * eff; // adjust for chemistry
+    return (nominalKwh / effectiveCharge * psh).toFixed(1);
   }
+
+  function maxBatteriesPerDay(nominalKwh) {
+  return Math.floor(eCharge / nominalKwh);
+}
+
 
   // ---------- Lithium Options ----------
   const lithiumOptions = [
@@ -188,20 +198,22 @@ function getBatteryOptions(finalDcKw, settings, inverterKw) {
       nominal: opt.nominal.toFixed(1),
       usable: usable.toFixed(1),
       backup: b,
-      charge_time: chargeTime(opt.nominal),
+      charge_time: chargeTime(opt.nominal, 0.95),
       connection: `Single ${busV}V lithium pack (plug & play, inbuilt BMS).`,
       tradeoff:
         opt.ah === 100
           ? "Cheapest lithium option, but limited for heavy loads."
           : opt.ah === 150
-          ? "Good balance of price vs backup. Suitable for households with occasional AC use."
-          : "Higher cost, but gives the longest and most reliable backup.",
+            ? "Good balance of price vs backup. Suitable for households with occasional AC use."
+            : "Higher cost, but gives the longest and most reliable backup.",
       recommended: opt.ah === 200,
+      max_batteries_per_day: maxBatteriesPerDay(opt.nominal),
     });
   });
 
   // ---------- Tubular Options ----------
   const tubularOptions = [
+    { ah: 100, nominal: (12 * 100 * 4) / 1000 },
     { ah: 150, nominal: (12 * 150 * 4) / 1000 }, // 4x12V series
     { ah: 200, nominal: (12 * 200 * 4) / 1000 },
   ];
@@ -215,13 +227,14 @@ function getBatteryOptions(finalDcKw, settings, inverterKw) {
       nominal: opt.nominal.toFixed(1),
       usable: usable.toFixed(1),
       backup: b,
-      charge_time: chargeTime(opt.nominal),
+      charge_time: chargeTime(opt.nominal, 0.7),
       connection: `4×12V ${opt.ah}Ah in series = ${busV}V system.`,
       tradeoff:
         opt.ah === 150
           ? "Cheap, but short lifespan (3–5 yrs) and weak for heavy loads."
           : "Affordable, but bulky and needs regular maintenance.",
       recommended: false,
+      max_batteries_per_day: maxBatteriesPerDay(opt.nominal),
     });
   });
 
@@ -639,13 +652,13 @@ module.exports = {
       // Step 5: Subsidy Eligible KW
       const subsidyResult = is_rwa
         ? rwaSubsidyCalc(
-            finalDcKw,
-            stateData,
-            settings.rwa_cost_inr_per_kw,
-            per_house_sanctioned_load_kw,
-            num_houses,
-            recommendedKw
-          )
+          finalDcKw,
+          stateData,
+          settings.rwa_cost_inr_per_kw,
+          per_house_sanctioned_load_kw,
+          num_houses,
+          recommendedKw
+        )
         : subsidyCalc(finalDcKw, stateData, settings.cost_inr_per_kw);
 
       const {
