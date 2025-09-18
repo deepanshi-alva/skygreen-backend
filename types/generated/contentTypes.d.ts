@@ -1134,6 +1134,12 @@ export interface ApiStateState extends Schema.CollectionType {
           localized: true;
         };
       }>;
+    inverter_notes: Attribute.Component<'disclaimer.important-notes', true> &
+      Attribute.SetPluginOptions<{
+        i18n: {
+          localized: true;
+        };
+      }>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

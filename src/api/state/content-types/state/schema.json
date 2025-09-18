@@ -147,6 +147,16 @@
         }
       },
       "component": "disclaimer.important-notes"
+    },
+    "inverter_notes": {
+      "type": "component",
+      "repeatable": true,
+      "pluginOptions": {
+        "i18n": {
+          "localized": true
+        }
+      },
+      "component": "disclaimer.important-notes"
     }
   }
 }

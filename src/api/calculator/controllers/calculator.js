@@ -3,7 +3,7 @@ const state = require("../../state/controllers/state");
 /* ----------------- Helper: Suggest SKU Options ----------------- */
 function suggestSkuOptions(finalDcKw) {
   const availableInverters = [
-    1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 33, 40, 50, 75, 100,
+    1, 1.5, 2, 2.5, 3, 4, 5, 6, 7.5, 8, 10, 12, 15, 20, 25, 33, 40, 50, 75, 100,
   ];
 
   // Step 1: get all valid inverter options
@@ -47,7 +47,7 @@ function suggestSkuOptions(finalDcKw) {
 /* ----------------- Inverter Options ----------------- */
 function getInverterOptions(finalDcKw) {
   const availableInverters = [
-    1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 33, 40, 50, 75, 100,
+    1, 1.5, 2, 2.5, 3, 4, 5, 6, 7.5, 8, 10, 12, 15, 20, 25, 33, 40, 50, 75, 100,
   ];
   let options = [];
 
@@ -78,8 +78,8 @@ function getStringDesign(panelCount) {
   const vmp = 43.82; // Vmp per panel
   const isc = 13.79; // Isc per panel
 
-  const maxInverterVoc = 1000;
-  const mpptWindow = [200, 800];
+  // const maxInverterVoc = 1000;
+  // const mpptWindow = [200, 800];
   const mpptCurrentLimit = 30;
 
   if (!panelCount || panelCount <= 0) {
@@ -136,155 +136,147 @@ function getStringDesign(panelCount) {
   return { single_mppt: singleMppt, dual_mppt: dualMppt };
 }
 
-/* ----------------- Battery Options with Series/Parallel ----------------- */
+/* ----------------- Battery Options (SKYGREEN Style Output) ----------------- */
+/* ----------------- Battery Options (SKYGREEN Style Output) ----------------- */
 function getBatteryOptions(finalDcKw, settings, inverterKw) {
   const psh = settings.solar_hours_per_day || 5.5;
-  const eSolar = finalDcKw * psh;
-  const eCharge = eSolar * 0.9; // 90% charging efficiency
+  console.log("this is the finaldcw", finalDcKw)
 
-  // Bus voltage decide based on inverter size
+  // Daily solar kWh generation (PR 0.8 + bifacial 1.05)
+  const eSolar = finalDcKw * psh * 0.8 * 1.05;
+  console.log("this is the esolar", eSolar,",",finalDcKw, psh);
+
+  // Energy available for charging after inverter/charging losses
+  const eCharge = eSolar * 0.9;
+
+  // Bus voltage based on inverter size
   let busV = 48;
   if (inverterKw <= 2) busV = 24;
   else if (inverterKw > 7.5) busV = 96;
 
-  let options = [];
+  let output = [];
 
-  // Helper: backup hours calc
+  // ---------- Helper Calculations ----------
   function backupHours(usableKwh) {
     return {
-      essentials_1_5kw: (usableKwh / 1.5).toFixed(1),
-      one_ac_3kw: (usableKwh / 3).toFixed(1),
-      two_acs_4_5kw: (usableKwh / 4.5).toFixed(1),
+      essentials: (usableKwh / 0.4).toFixed(1),
+      one_ac: (usableKwh / 1.5).toFixed(1),
+      two_acs: (usableKwh / 2.7).toFixed(1),
     };
   }
 
-  // Helper: best fit recommendation
-  function bestFit(skus, eCharge) {
-    if (skus.length === 0) return "No suitable SKU found.";
-    let closest = skus.reduce((prev, curr) => {
-      return Math.abs(parseFloat(curr.usable_kwh) - eCharge) <
-        Math.abs(parseFloat(prev.usable_kwh) - eCharge)
-        ? curr
-        : prev;
-    });
-    return `Best fit: ${closest.type} ${closest.ah}Ah (${closest.nominal_kwh} kWh, usable ${closest.usable_kwh} kWh).`;
+  function chargeTime(nominalKwh) {
+    console.log("this is the nominalkwh", nominalKwh);
+    
+    console.log("this is the calculation for the chargetime", (nominalKwh / eCharge * psh).toFixed(1), ",", eCharge, ",", psh);
+    return (nominalKwh / eCharge * psh).toFixed(1); // hrs needed from daily solar
   }
 
-  // Helper: compute series-parallel requirement
-  function computeSeriesParallel(ah, blockV, busV, requiredAh) {
-    const seriesCount = busV / blockV;
-    const parallelCount = Math.ceil(requiredAh / ah);
-    return {
-      series: seriesCount,
-      parallel: parallelCount,
-      total_blocks: seriesCount * parallelCount,
-    };
-  }
+  // ---------- Lithium Options ----------
+  const lithiumOptions = [
+    { ah: 100, nominal: (busV * 100) / 1000 }, // kWh = V * Ah / 1000
+    { ah: 150, nominal: (busV * 150) / 1000 },
+    { ah: 200, nominal: (busV * 200) / 1000 },
+  ];
 
-  // --------- Lithium Batteries ---------
-  {
-    const dod = 0.9,
-      eff = 0.95;
-    const eBatMax = eCharge / (dod * eff);
-    const ahMax = (eBatMax * 1000) / busV;
-    const eBatMin = eBatMax * 0.4;
-    const ahMin = (eBatMin * 1000) / busV;
-
-    // 12V lithium packs
-    const skuList12v = [100, 200].map((ah) => {
-      const eNominal = (12 * ah) / 1000;
-      const eUsable = eNominal * dod * eff;
-      const config = computeSeriesParallel(ah, 12, busV, ahMax);
-      return {
-        type: "12V block",
-        ah,
-        nominal_kwh: eNominal.toFixed(1),
-        usable_kwh: eUsable.toFixed(1),
-        backup_hours: backupHours(eUsable),
-        series_parallel_config: config,
-      };
-    });
-
-    // 48V direct lithium modules
-    const skuList48v = [100, 200, 400].map((ah) => {
-      const eNominal = (48 * ah) / 1000;
-      const eUsable = eNominal * dod * eff;
-      const series = busV / 48;
-      const parallel = Math.ceil(ahMax / ah);
-      return {
-        type: "48V module",
-        ah,
-        nominal_kwh: eNominal.toFixed(1),
-        usable_kwh: eUsable.toFixed(1),
-        backup_hours: backupHours(eUsable),
-        series_parallel_config: {
-          series,
-          parallel,
-          total_blocks: series * parallel,
-        },
-      };
-    });
-
-    options.push({
+  lithiumOptions.forEach((opt) => {
+    const usable = opt.nominal * 0.85; // ~85% usable
+    const b = backupHours(usable);
+    output.push({
       type: "Lithium",
-      bus_voltage: busV,
-      min_recommended: { kwh: eBatMin.toFixed(1), ah: ahMin.toFixed(0) },
-      max_recommended: { kwh: eBatMax.toFixed(1), ah: ahMax.toFixed(0) },
-      connection: {
-        "12v_series_parallel": {
-          note: "Use 12V lithium packs in series-parallel to reach inverter bus voltage",
-          skus: skuList12v,
-          best_fit_recommendation: bestFit(skuList12v, eCharge),
-        },
-        "48v_direct_modules": {
-          note: "Premium rack ESS packs, directly parallel expandable",
-          skus: skuList48v,
-          best_fit_recommendation: bestFit(skuList48v, eCharge),
-        },
-      },
+      ah: opt.ah,
+      nominal: opt.nominal.toFixed(1),
+      usable: usable.toFixed(1),
+      backup: b,
+      charge_time: chargeTime(opt.nominal),
+      connection: `Single ${busV}V lithium pack (plug & play, inbuilt BMS).`,
+      tradeoff:
+        opt.ah === 100
+          ? "Cheapest lithium option, but limited for heavy loads."
+          : opt.ah === 150
+          ? "Good balance of price vs backup. Suitable for households with occasional AC use."
+          : "Higher cost, but gives the longest and most reliable backup.",
+      recommended: opt.ah === 200,
     });
-  }
+  });
 
-  // --------- Tubular Batteries ---------
-  {
-    const dod = 0.5,
-      eff = 0.85;
-    const eBatMax = eCharge / (dod * eff);
-    const ahMax = (eBatMax * 1000) / busV;
-    const eBatMin = eBatMax * 0.4;
-    const ahMin = (eBatMin * 1000) / busV;
+  // ---------- Tubular Options ----------
+  const tubularOptions = [
+    { ah: 150, nominal: (12 * 150 * 4) / 1000 }, // 4x12V series
+    { ah: 200, nominal: (12 * 200 * 4) / 1000 },
+  ];
 
-    const skuList12v = [150, 200].map((ah) => {
-      const eNominal = (12 * ah) / 1000;
-      const eUsable = eNominal * dod * eff;
-      const config = computeSeriesParallel(ah, 12, busV, ahMax);
-      return {
-        type: "12V block",
-        ah,
-        nominal_kwh: eNominal.toFixed(1),
-        usable_kwh: eUsable.toFixed(1),
-        backup_hours: backupHours(eUsable),
-        series_parallel_config: config,
-      };
-    });
-
-    options.push({
+  tubularOptions.forEach((opt) => {
+    const usable = opt.nominal * 0.5; // 50% usable
+    const b = backupHours(usable);
+    output.push({
       type: "Tubular",
-      bus_voltage: busV,
-      min_recommended: { kwh: eBatMin.toFixed(1), ah: ahMin.toFixed(0) },
-      max_recommended: { kwh: eBatMax.toFixed(1), ah: ahMax.toFixed(0) },
-      connection: {
-        "12v_series_parallel": {
-          note: "Only 12V tubular blocks available, connect in series-parallel",
-          skus: skuList12v,
-          best_fit_recommendation: bestFit(skuList12v, eCharge),
-        },
-      },
+      ah: opt.ah,
+      nominal: opt.nominal.toFixed(1),
+      usable: usable.toFixed(1),
+      backup: b,
+      charge_time: chargeTime(opt.nominal),
+      connection: `4×12V ${opt.ah}Ah in series = ${busV}V system.`,
+      tradeoff:
+        opt.ah === 150
+          ? "Cheap, but short lifespan (3–5 yrs) and weak for heavy loads."
+          : "Affordable, but bulky and needs regular maintenance.",
+      recommended: false,
     });
+  });
+
+  return output;
+}
+
+
+/* --------- Formatter: to pretty text blocks --------- */
+function formatBatteryOptions(options) {
+  let text = "";
+
+  // ✅ Recommended first
+  const recommended = options.find((o) => o.recommended);
+  if (recommended) {
+    text += `✅ SKYGREEN Recommended Option (Best Balance)\n\n`;
+    text += `Lithium 48V ${recommended.ah}Ah (≈ ${recommended.nominal} kWh nominal, ~${recommended.usable} kWh usable)\n\n`;
+    text += `Backup (Essentials ~0.4 kW): ~${recommended.backup.essentials} hrs\n\n`;
+    text += `Backup (1 Inverter AC ~1.5 kW): ~${recommended.backup.one_ac} hrs\n\n`;
+    text += `Backup (2 Inverter ACs ~2.7 kW): ~${recommended.backup.two_acs} hrs\n\n`;
+    text += `Charging Time: ~${recommended.charge_time} hrs\n\n`;
+    text += `Connection: ${recommended.connection}\n\n`;
+    text += `Trade-off: ${recommended.tradeoff}\n\n`;
   }
 
-  return options;
+  // ⚡ Other Lithium
+  text += `⚡ Other Lithium Options\n`;
+  options
+    .filter((o) => o.type === "Lithium" && !o.recommended)
+    .forEach((o) => {
+      text += `Option: Lithium 48V ${o.ah}Ah (≈ ${o.nominal} kWh nominal, ~${o.usable} kWh usable)\n\n`;
+      text += `Backup (Essentials): ~${o.backup.essentials} hrs\n\n`;
+      text += `Backup (1 AC): ~${o.backup.one_ac} hrs\n\n`;
+      text += `Backup (2 ACs): ~${o.backup.two_acs} hrs\n\n`;
+      text += `Charging Time: ~${o.charge_time} hrs\n\n`;
+      text += `Connection: ${o.connection}\n\n`;
+      text += `Trade-off: ${o.tradeoff}\n\n`;
+    });
+
+  // 🔋 Tubular
+  text += `🔋 Tubular (Budget Option, 4×12V Batteries in Series = 48V System)\n\n`;
+  options
+    .filter((o) => o.type === "Tubular")
+    .forEach((o) => {
+      text += `Option: 4×12V ${o.ah}Ah Tubular (≈ ${o.nominal} kWh nominal, ~${o.usable} kWh usable)\n\n`;
+      text += `Backup (Essentials): ~${o.backup.essentials} hrs\n\n`;
+      text += `Backup (1 AC): ~${o.backup.one_ac} hrs\n\n`;
+      text += `Backup (2 ACs): ~${o.backup.two_acs} hrs\n\n`;
+      text += `Charging Time: ~${o.charge_time} hrs\n\n`;
+      text += `Connection: ${o.connection}\n\n`;
+      text += `Trade-off: ${o.tradeoff}\n\n`;
+    });
+
+  return text;
 }
+
 
 const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
   // console.log("................", finalDcKw, stateData, benchmarkCostPerKw);
@@ -415,9 +407,7 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
   return { central, state, total };
 };
 
-// --------------------
-// RWA / GHS Subsidy calculator
-// --------------------
+/* ----------------- RWA / GHS Subsidy calculator ----------------- */
 const rwaSubsidyCalc = (
   finalDcKw,
   stateData,
@@ -595,6 +585,7 @@ module.exports = {
         recommendedKw = monthlyUnits / (settings.solar_hours_per_day * 30);
         panelCount = Math.ceil((recommendedKw * 1000) / settings.panel_watt_w);
         finalDcKw = panelCount * (settings.panel_watt_w / 1000);
+        console.log("from here the finaldckw is being calculated", finalDcKw)
         sanctionedLoadMustBe = Math.ceil(finalDcKw);
         dailyUnit = monthlyUnits / 30;
 
@@ -627,6 +618,8 @@ module.exports = {
       }
 
       let totalSpend = monthlySpendInr * 12 * 30;
+
+      console.log("this is the finaldckw that is coming from the main", finalDcKw);
 
       // Inverter
       const inverterOptions = getInverterOptions(finalDcKw);
