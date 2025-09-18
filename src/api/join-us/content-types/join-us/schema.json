@@ -1,10 +1,10 @@
 {
   "kind": "collectionType",
-  "collectionName": "contact_uses",
+  "collectionName": "join_uses",
   "info": {
-    "singularName": "contact-us",
-    "pluralName": "contact-uses",
-    "displayName": "Contact Us",
+    "singularName": "join-us",
+    "pluralName": "join-uses",
+    "displayName": "Join Us",
     "description": ""
   },
   "options": {
@@ -24,17 +24,14 @@
     "city": {
       "type": "string"
     },
-    "capacity_required": {
-      "type": "biginteger"
-    },
     "preferred_date": {
       "type": "date"
     },
     "preferred_time_slot": {
       "type": "text"
     },
-    "message": {
-      "type": "text"
+    "business_type": {
+      "type": "string"
     },
     "gender": {
       "type": "string"
