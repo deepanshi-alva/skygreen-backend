@@ -178,8 +178,8 @@ function getBatteryOptions(finalDcKw, settings, inverterKw) {
   }
 
   function maxBatteriesPerDay(nominalKwh) {
-  return Math.floor(eCharge / nominalKwh);
-}
+    return Math.floor(eCharge / nominalKwh);
+  }
 
 
   // ---------- Lithium Options ----------
@@ -392,13 +392,25 @@ const rwaSubsidyCalc = (
     return { central: 0, state: 0, total: 0, eligibleKw: 0 };
   }
 
+  console.log("entered into the rwa subsidy function", rwa_mode)
+
   // Eligible capacity
-  const eligibleKw = Math.min(
+  const factors = [
     finalDcKw,
-    recommendedKw,
     numHouses * Math.min(perHouseSanctionedLoad, rwa_per_house_cap_kw),
-    rwa_total_cap_kw
+    rwa_total_cap_kw,
+  ].filter((n) => n > 0); // ✅ remove 0 or negatives
+
+  const eligibleKw = factors.length > 0 ? Math.min(...factors) : 0;
+
+  console.log(
+    "this is eligible",
+    finalDcKw,
+    rwa_total_cap_kw,
+    numHouses * Math.min(perHouseSanctionedLoad, rwa_per_house_cap_kw),
+    eligibleKw
   );
+
 
   let central = 0,
     state = 0;
@@ -409,26 +421,26 @@ const rwaSubsidyCalc = (
 
   switch (rwa_mode) {
     case "cfa_only":
+      console.log("1");
       state = 0;
       break;
     case "flat_per_kw":
+      console.log("2");
       state = eligibleKw * (rwa_state_topup || 0);
       break;
     case "percent_of_cost":
+      console.log("3");
       state = eligibleKw * benchmarkCostPerKw * ((rwa_state_topup || 20) / 100);
-      // console.log(
-      //   "this si the percent of cost ",
-      //   benchmarkCostPerKw,
-      //   eligibleKw,
-      //   (rwa_state_topup || 20) / 100
-      // );
       break;
     case "percent_of_cost_cfa_only":
+      console.log("4");
       central =
         eligibleKw * benchmarkCostPerKw * ((rwa_state_topup || 20) / 100);
+      console.log(eligibleKw, benchmarkCostPerKw, rwa_state_topup);
       state = 0;
       break;
     case "fixed_per_house":
+      console.log("5");
       // console.log(
       //   "we are in the switch statement and in fixed per house thing"
       // );
@@ -436,6 +448,7 @@ const rwaSubsidyCalc = (
       // console.log("state subsidy in case of the fixed per house is", state);
       break;
     case "state_only":
+      console.log("6");
       central = 0;
       state = eligibleKw * benchmarkCostPerKw * ((rwa_state_topup || 20) / 100);
       break;
@@ -487,7 +500,7 @@ module.exports = {
         return ctx.badRequest(`State ${state_name} not found`);
       }
       const stateData = stateDataArr[0];
-      // console.log("this is the state data", stateData);
+      console.log("this is the state data", stateData);
 
       let rwa_per_house_cap_kw = stateData.rwa_per_house_cap_kw;
       // console.log("this is the rwa per house cap kw", rwa_per_house_cap_kw);
