@@ -241,56 +241,6 @@ function getBatteryOptions(finalDcKw, settings, inverterKw) {
   return output;
 }
 
-
-/* --------- Formatter: to pretty text blocks --------- */
-function formatBatteryOptions(options) {
-  let text = "";
-
-  // ✅ Recommended first
-  const recommended = options.find((o) => o.recommended);
-  if (recommended) {
-    text += `✅ SKYGREEN Recommended Option (Best Balance)\n\n`;
-    text += `Lithium 48V ${recommended.ah}Ah (≈ ${recommended.nominal} kWh nominal, ~${recommended.usable} kWh usable)\n\n`;
-    text += `Backup (Essentials ~0.4 kW): ~${recommended.backup.essentials} hrs\n\n`;
-    text += `Backup (1 Inverter AC ~1.5 kW): ~${recommended.backup.one_ac} hrs\n\n`;
-    text += `Backup (2 Inverter ACs ~2.7 kW): ~${recommended.backup.two_acs} hrs\n\n`;
-    text += `Charging Time: ~${recommended.charge_time} hrs\n\n`;
-    text += `Connection: ${recommended.connection}\n\n`;
-    text += `Trade-off: ${recommended.tradeoff}\n\n`;
-  }
-
-  // ⚡ Other Lithium
-  text += `⚡ Other Lithium Options\n`;
-  options
-    .filter((o) => o.type === "Lithium" && !o.recommended)
-    .forEach((o) => {
-      text += `Option: Lithium 48V ${o.ah}Ah (≈ ${o.nominal} kWh nominal, ~${o.usable} kWh usable)\n\n`;
-      text += `Backup (Essentials): ~${o.backup.essentials} hrs\n\n`;
-      text += `Backup (1 AC): ~${o.backup.one_ac} hrs\n\n`;
-      text += `Backup (2 ACs): ~${o.backup.two_acs} hrs\n\n`;
-      text += `Charging Time: ~${o.charge_time} hrs\n\n`;
-      text += `Connection: ${o.connection}\n\n`;
-      text += `Trade-off: ${o.tradeoff}\n\n`;
-    });
-
-  // 🔋 Tubular
-  text += `🔋 Tubular (Budget Option, 4×12V Batteries in Series = 48V System)\n\n`;
-  options
-    .filter((o) => o.type === "Tubular")
-    .forEach((o) => {
-      text += `Option: 4×12V ${o.ah}Ah Tubular (≈ ${o.nominal} kWh nominal, ~${o.usable} kWh usable)\n\n`;
-      text += `Backup (Essentials): ~${o.backup.essentials} hrs\n\n`;
-      text += `Backup (1 AC): ~${o.backup.one_ac} hrs\n\n`;
-      text += `Backup (2 ACs): ~${o.backup.two_acs} hrs\n\n`;
-      text += `Charging Time: ~${o.charge_time} hrs\n\n`;
-      text += `Connection: ${o.connection}\n\n`;
-      text += `Trade-off: ${o.tradeoff}\n\n`;
-    });
-
-  return text;
-}
-
-
 const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
   // console.log("................", finalDcKw, stateData, benchmarkCostPerKw);
   const { one_kw_rate, three_kw_rate, total_subsidy, state_top_up, name } =
@@ -449,15 +399,6 @@ const rwaSubsidyCalc = (
     numHouses * Math.min(perHouseSanctionedLoad, rwa_per_house_cap_kw),
     rwa_total_cap_kw
   );
-  // console.log(
-  //   "this is the subsidy eligible for",
-  //   eligibleKw,
-  //   recommendedKw,
-  //   finalDcKw,
-  //   numHouses * rwa_per_house_cap_kw,
-  //   rwa_total_cap_kw
-  // );
-  // console.log("eligible kw", eligibleKw);
 
   let central = 0,
     state = 0;
@@ -627,7 +568,7 @@ module.exports = {
 
         panelCount = Math.ceil((recommendedKw * 1000) / settings.panel_watt_w);
         finalDcKw = panelCount * (settings.panel_watt_w / 1000);
-        sanctionedLoadMustBe = Math.ceil(recommendedKw);
+        sanctionedLoadMustBe = Math.ceil(finalDcKw);
       }
 
       let totalSpend = monthlySpendInr * 12 * 30;
@@ -673,7 +614,7 @@ module.exports = {
       const systemCostPerKw = is_rwa
         ? settings.rwa_cost_inr_per_kw
         : settings.cost_inr_per_kw;
-      const grossCostInr = recommendedKw * systemCostPerKw;
+      const grossCostInr = finalDcKw * systemCostPerKw;
       const netCostInr = Math.max(grossCostInr - totalSubsidyInr, 0);
 
       // Step 8: Generation
