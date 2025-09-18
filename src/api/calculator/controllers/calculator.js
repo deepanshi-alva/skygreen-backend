@@ -288,7 +288,8 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     state = subsidyEligibleKw * benchmarkCostPerKw * 0.3;
   } else if (
     name.toLowerCase() === "haryana" ||
-    name.toLowerCase() === "chandigarh"
+    name.toLowerCase() === "chandigarh" ||
+    name.toLowerCase() === "andhra pradesh"
   ) {
     // Haryana = % of benchmark (40% up to 3 kW, then 20%)
     if (finalDcKw <= 3) {
