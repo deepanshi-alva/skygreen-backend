@@ -3,7 +3,7 @@ const state = require("../../state/controllers/state");
 /* ----------------- Helper: Suggest SKU Options ----------------- */
 function suggestSkuOptions(finalDcKw) {
   const availableInverters = [
-    1, 2, 3, 4, 5, 6, 7.5, 10, 15, 20, 25, 30, 50, 75, 100,
+    1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 33, 40, 50, 75, 100,
   ];
 
   // Step 1: get all valid inverter options
@@ -47,7 +47,7 @@ function suggestSkuOptions(finalDcKw) {
 /* ----------------- Inverter Options ----------------- */
 function getInverterOptions(finalDcKw) {
   const availableInverters = [
-    1, 2, 3, 4, 5, 6, 7.5, 10, 15, 20, 25, 30, 50, 75, 100,
+    1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 33, 40, 50, 75, 100,
   ];
   let options = [];
 
