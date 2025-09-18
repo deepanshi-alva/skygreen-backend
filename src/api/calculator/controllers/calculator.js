@@ -436,7 +436,7 @@ const rwaSubsidyCalc = (
       console.log("4");
       central =
         eligibleKw * benchmarkCostPerKw * ((rwa_state_topup || 20) / 100);
-      console.log(eligibleKw, benchmarkCostPerKw, rwa_state_topup,central);
+      console.log(eligibleKw, benchmarkCostPerKw, (rwa_state_topup || 20),central);
       state = 0;
       break;
     case "fixed_per_house":
