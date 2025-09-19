@@ -313,6 +313,21 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     if (finalDcKw <= 1) state = 20000;
     else if (finalDcKw <= 2) state = 40000;
     else state = 50000; // for 3 kW and above
+  }
+  if (name.toLowerCase() === "nagaland") {
+    // ... existing Nagaland logic
+  } else if (name.toLowerCase() === "ladakh") {
+    // ... existing Ladakh logic
+  } else if (name.toLowerCase() === "goa") {
+    // ✅ Goa state subsidy logic
+    const grossCost = finalDcKw * benchmarkCostPerKw;
+    if (finalDcKw <= 10) {
+      state = grossCost * 0.5; // 50% subsidy up to 10 kW
+    } else if (finalDcKw > 10 && finalDcKw <= 30) {
+      state = grossCost * 0.5 + grossCost * 0.1; // 10% subsidy for 10–30 kW
+    } else {
+      state = 0; // No subsidy above 30 kW
+    }
   } else if (
     name.toLowerCase() === "uttarakhand" ||
     name.toLowerCase() === "puducherry"
@@ -419,6 +434,7 @@ const rwaSubsidyCalc = (
     rwa_total_cap_kw,
     rwa_mode,
     rwa_state_topup,
+    name,
   } = stateData;
 
   if (!rwa_enabled || rwa_mode === "none") {
@@ -436,6 +452,18 @@ const rwaSubsidyCalc = (
 
   let central = 0,
     state = 0;
+
+  // ✅ Apply Goa-specific logic
+  if (name?.toLowerCase() === "goa") {
+    // Limit eligibility: min(finalDcKw, 500 kW)
+    const eligibleKw = Math.min(finalDcKw, 500);
+
+    const central = eligibleKw * benchmarkCostPerKw * 0.2; // 20%
+    const state = eligibleKw * benchmarkCostPerKw * 0.5; // 50%
+    const total = central + state;
+
+    return { central, state, total, eligibleKw };
+  }
 
   if (rwa_mode !== "state_only") {
     central = eligibleKw * rwa_central_rate;
