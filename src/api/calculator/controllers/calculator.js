@@ -154,6 +154,9 @@ function getBatteryOptions(finalDcKw, settings, inverterKw) {
   if (inverterKw <= 2) busV = 24;
   else if (inverterKw > 7.5) busV = 96;
 
+  // ✅ Direct max battery size in Ah
+  const maxBatteryAh = (eCharge * 1000) / busV;
+
   let output = [];
 
   // ---------- Helper Calculations ----------
@@ -207,14 +210,16 @@ function getBatteryOptions(finalDcKw, settings, inverterKw) {
           : "Higher cost, but gives the longest and most reliable backup.",
       recommended: opt.ah === 200,
       max_batteries_per_day: maxBatteriesPerDay(opt.nominal),
+      max_battery_ah: maxBatteryAh.toFixed(0),
     });
   });
 
-  // ---------- Tubular Options ----------
+  // Tubular Options (auto adjust for bus voltage)
+
   const tubularOptions = [
-    { ah: 100, nominal: (12 * 100 * 4) / 1000 },
-    { ah: 150, nominal: (12 * 150 * 4) / 1000 }, // 4x12V series
-    { ah: 200, nominal: (12 * 200 * 4) / 1000 },
+    { ah: 100, nominal: (busV * 100) / 1000 },
+    { ah: 150, nominal: (busV * 150) / 1000 },
+    { ah: 200, nominal: (busV * 200) / 1000 },
   ];
 
   tubularOptions.forEach((opt) => {
@@ -227,13 +232,42 @@ function getBatteryOptions(finalDcKw, settings, inverterKw) {
       usable: usable.toFixed(1),
       backup: b,
       charge_time: chargeTime(opt.nominal, 0.7),
-      connection: `4×12V ${opt.ah}Ah in series = ${busV}V system.`,
+      connection: `${busV / 12}×12V ${opt.ah}Ah in series = ${busV}V system.`,
       tradeoff:
         opt.ah === 150
           ? "Cheap, but short lifespan (3–5 yrs) and weak for heavy loads."
           : "Affordable, but bulky and needs regular maintenance.",
       recommended: false,
       max_batteries_per_day: maxBatteriesPerDay(opt.nominal),
+      max_battery_ah: maxBatteryAh.toFixed(0),
+    });
+  });
+
+  // ---------- Flat Plate Options ----------
+  const flatPlateOptions = [
+    { ah: 80, nominal: (busV * 80) / 1000 },
+    { ah: 100, nominal: (busV * 100) / 1000 },
+    { ah: 150, nominal: (busV * 150) / 1000 },
+  ];
+
+  flatPlateOptions.forEach((opt) => {
+    const usable = opt.nominal * 0.45; // ~45% usable
+    const b = backupHours(usable);
+    output.push({
+      type: "Flat Plate",
+      ah: opt.ah,
+      nominal: opt.nominal.toFixed(1),
+      usable: usable.toFixed(1),
+      backup: b,
+      charge_time: chargeTime(opt.nominal, 0.65), // less efficient charging
+      connection: `${busV / 12}×12V ${opt.ah}Ah in series = ${busV}V system.`,
+      tradeoff:
+        opt.ah === 100
+          ? "Very low cost, but shortest lifespan (2–3 yrs) and not ideal for deep discharge."
+          : "Cheapest upfront, but bulky, less efficient, and frequent replacement needed.",
+      recommended: false,
+      max_batteries_per_day: maxBatteriesPerDay(opt.nominal),
+      max_battery_ah: maxBatteryAh.toFixed(0),
     });
   });
 
