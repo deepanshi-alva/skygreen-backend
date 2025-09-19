@@ -21,8 +21,8 @@ function suggestSkuOptions(finalDcKw) {
             ratio === 1
               ? "Perfect match"
               : ratio > 1
-                ? "Over-paneling (clipping possible)"
-                : "Under-paneling (future expansion room)",
+              ? "Over-paneling (clipping possible)"
+              : "Under-paneling (future expansion room)",
         };
       }
       return null;
@@ -63,8 +63,8 @@ function getInverterOptions(finalDcKw) {
           ratio === 1
             ? "Perfect match, zero clipping"
             : ratio > 1
-              ? "Over-paneling (clipping possible)"
-              : "Under-paneling (future expansion room)",
+            ? "Over-paneling (clipping possible)"
+            : "Under-paneling (future expansion room)",
       });
     }
   });
@@ -140,7 +140,7 @@ function getStringDesign(panelCount) {
 
 function getBatteryOptions(finalDcKw, settings, inverterKw) {
   const psh = settings.solar_hours_per_day || 5.5;
-  console.log("this is the finaldcw", finalDcKw)
+  console.log("this is the finaldcw", finalDcKw);
 
   // Daily solar kWh generation (PR 0.8 + bifacial 1.05)
   const eSolar = finalDcKw * psh * 0.8 * 1.05;
@@ -174,13 +174,12 @@ function getBatteryOptions(finalDcKw, settings, inverterKw) {
 
   function chargeTime(nominalKwh, eff = 0.9) {
     const effectiveCharge = eCharge * eff; // adjust for chemistry
-    return (nominalKwh / effectiveCharge * psh).toFixed(1);
+    return ((nominalKwh / effectiveCharge) * psh).toFixed(1);
   }
 
   function maxBatteriesPerDay(nominalKwh) {
     return Math.floor(eCharge / nominalKwh);
   }
-
 
   // ---------- Lithium Options ----------
   const lithiumOptions = [
@@ -204,8 +203,8 @@ function getBatteryOptions(finalDcKw, settings, inverterKw) {
         opt.ah === 100
           ? "Cheapest lithium option, but limited for heavy loads."
           : opt.ah === 150
-            ? "Good balance of price vs backup. Suitable for households with occasional AC use."
-            : "Higher cost, but gives the longest and most reliable backup.",
+          ? "Good balance of price vs backup. Suitable for households with occasional AC use."
+          : "Higher cost, but gives the longest and most reliable backup.",
       recommended: opt.ah === 200,
       max_batteries_per_day: maxBatteriesPerDay(opt.nominal),
     });
@@ -377,8 +376,7 @@ const rwaSubsidyCalc = (
   stateData,
   benchmarkCostPerKw,
   perHouseSanctionedLoad,
-  numHouses,
-  recommendedKw
+  numHouses
 ) => {
   const {
     rwa_enabled,
@@ -393,25 +391,14 @@ const rwaSubsidyCalc = (
     return { central: 0, state: 0, total: 0, eligibleKw: 0 };
   }
 
-  console.log("entered into the rwa subsidy function", rwa_mode)
+  console.log("entered into the rwa subsidy function", rwa_mode);
 
   // Eligible capacity
-  const factors = [
-    finalDcKw,
-    numHouses * Math.min(perHouseSanctionedLoad, rwa_per_house_cap_kw),
-    rwa_total_cap_kw,
-  ].filter((n) => n > 0); // ✅ remove 0 or negatives
+  const factors = [finalDcKw, rwa_total_cap_kw].filter((n) => n > 0); // ✅ remove 0 or negatives
 
   const eligibleKw = factors.length > 0 ? Math.min(...factors) : 0;
 
-  console.log(
-    "this is eligible",
-    finalDcKw,
-    rwa_total_cap_kw,
-    numHouses * Math.min(perHouseSanctionedLoad, rwa_per_house_cap_kw),
-    eligibleKw
-  );
-
+  console.log("this is eligible", finalDcKw, rwa_total_cap_kw, eligibleKw);
 
   let central = 0,
     state = 0;
@@ -437,7 +424,12 @@ const rwaSubsidyCalc = (
       console.log("4");
       central =
         eligibleKw * benchmarkCostPerKw * ((rwa_state_topup || 20) / 100);
-      console.log(eligibleKw, benchmarkCostPerKw, (rwa_state_topup || 20),central);
+      console.log(
+        eligibleKw,
+        benchmarkCostPerKw,
+        rwa_state_topup || 20,
+        central
+      );
       state = 0;
       break;
     case "fixed_per_house":
@@ -553,7 +545,7 @@ module.exports = {
         recommendedKw = monthlyUnits / (settings.solar_hours_per_day * 30);
         panelCount = Math.ceil((recommendedKw * 1000) / settings.panel_watt_w);
         finalDcKw = panelCount * (settings.panel_watt_w / 1000);
-        console.log("from here the finaldckw is being calculated", finalDcKw)
+        console.log("from here the finaldckw is being calculated", finalDcKw);
         sanctionedLoadMustBe = Math.ceil(finalDcKw);
         dailyUnit = monthlyUnits / 30;
 
@@ -587,7 +579,10 @@ module.exports = {
 
       let totalSpend = monthlySpendInr * 12 * 30;
 
-      console.log("this is the finaldckw that is coming from the main", finalDcKw);
+      console.log(
+        "this is the finaldckw that is coming from the main",
+        finalDcKw
+      );
 
       // Inverter
       const inverterOptions = getInverterOptions(finalDcKw);
@@ -607,13 +602,12 @@ module.exports = {
       // Step 5: Subsidy Eligible KW
       const subsidyResult = is_rwa
         ? rwaSubsidyCalc(
-          finalDcKw,
-          stateData,
-          settings.rwa_cost_inr_per_kw,
-          per_house_sanctioned_load_kw,
-          num_houses,
-          recommendedKw
-        )
+            finalDcKw,
+            stateData,
+            settings.rwa_cost_inr_per_kw,
+            per_house_sanctioned_load_kw,
+            num_houses
+          )
         : subsidyCalc(finalDcKw, stateData, settings.cost_inr_per_kw);
 
       const {
