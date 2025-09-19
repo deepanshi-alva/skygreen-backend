@@ -401,7 +401,7 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
 
   // --- Step 3: Total ---
   const total = central + state;
-  return { central, state, total };
+  return { central, state, total, eligibleKw: subsidyEligibleKw };
 };
 
 /* ----------------- RWA / GHS Subsidy calculator ----------------- */
