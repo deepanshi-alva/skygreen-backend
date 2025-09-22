@@ -446,12 +446,23 @@ const rwaSubsidyCalc = (
   // Eligible capacity
   const factors = [finalDcKw, rwa_total_cap_kw].filter((n) => n > 0); // ✅ remove 0 or negatives
 
-  const eligibleKw = factors.length > 0 ? Math.min(...factors) : 0;
+  let eligibleKw = factors.length > 0 ? Math.min(...factors) : 0;
 
   console.log("this is eligible", finalDcKw, rwa_total_cap_kw, eligibleKw);
 
   let central = 0,
     state = 0;
+
+    /* ✅ Special handling: Himachal Pradesh */
+  if (name?.toLowerCase().includes("himachal")) {
+    // MNRE CFA → 20% of benchmark cost
+    central = eligibleKw * benchmarkCostPerKw * 0.2;
+
+    // HIMURJA state subsidy → ₹6000/kW
+    state = eligibleKw * 6000;
+
+    return { central, state, total: central + state, eligibleKw };
+  }
 
   // ✅ Apply Goa-specific logic
   if (name?.toLowerCase() === "goa") {
