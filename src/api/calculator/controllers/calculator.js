@@ -21,8 +21,8 @@ function suggestSkuOptions(finalDcKw) {
             ratio === 1
               ? "Perfect match"
               : ratio > 1
-              ? "Over-paneling (clipping possible)"
-              : "Under-paneling (future expansion room)",
+                ? "Over-paneling (clipping possible)"
+                : "Under-paneling (future expansion room)",
         };
       }
       return null;
@@ -63,8 +63,8 @@ function getInverterOptions(finalDcKw) {
           ratio === 1
             ? "Perfect match, zero clipping"
             : ratio > 1
-            ? "Over-paneling (clipping possible)"
-            : "Under-paneling (future expansion room)",
+              ? "Over-paneling (clipping possible)"
+              : "Under-paneling (future expansion room)",
       });
     }
   });
@@ -206,8 +206,8 @@ function getBatteryOptions(finalDcKw, settings, inverterKw) {
         opt.ah === 100
           ? "Cheapest lithium option, but limited for heavy loads."
           : opt.ah === 150
-          ? "Good balance of price vs backup. Suitable for households with occasional AC use."
-          : "Higher cost, but gives the longest and most reliable backup.",
+            ? "Good balance of price vs backup. Suitable for households with occasional AC use."
+            : "Higher cost, but gives the longest and most reliable backup.",
       recommended: opt.ah === 200,
       max_batteries_per_day: maxBatteriesPerDay(opt.nominal),
       max_battery_ah: maxBatteryAh.toFixed(0),
@@ -664,12 +664,12 @@ module.exports = {
       // Step 5: Subsidy Eligible KW
       const subsidyResult = is_rwa
         ? rwaSubsidyCalc(
-            finalDcKw,
-            stateData,
-            settings.rwa_cost_inr_per_kw,
-            per_house_sanctioned_load_kw,
-            num_houses
-          )
+          finalDcKw,
+          stateData,
+          settings.rwa_cost_inr_per_kw,
+          per_house_sanctioned_load_kw,
+          num_houses
+        )
         : subsidyCalc(finalDcKw, stateData, settings.cost_inr_per_kw);
 
       const {
@@ -725,8 +725,16 @@ module.exports = {
         annualSavingNet * yearsAfterPayback - totalDiscom;
 
       // Step 11: Roof Feasibility
-      // Step 11: Roof Feasibility
-      let roofNeededSqft = panelCount * settings.panel_area_sqft;
+      let roofNeededSqft;
+
+      // ✅ If user provided roof_area_value → use actual panel area from settings
+      // Else → assume ~80 sqft per panel (default fallback)
+      if (roof_area_value && roof_area_value > 0) {
+        roofNeededSqft = panelCount * settings.panel_area_sqft;
+      } else {
+        roofNeededSqft = panelCount * 80; // fallback assumption
+      }
+
       let roofOk = null;
 
       // Convert available roof input to sqft (already done earlier → roofSqft)
