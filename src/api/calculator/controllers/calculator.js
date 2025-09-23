@@ -375,7 +375,8 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
   } else if (
     name.toLowerCase() === "madhya pradesh" ||
     name.toLowerCase() === "telangana" ||
-    name.toLowerCase() === "maharashtra"
+    name.toLowerCase() === "maharashtra" ||
+    name.toLowerCase() === "rajasthan"
   ) {
     // --- State subsidy percentage-based ---
     const grossCost = finalDcKw * benchmarkCostPerKw;
