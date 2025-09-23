@@ -742,9 +742,9 @@ module.exports = {
       // ✅ If user provided roof_area_value → use actual panel area from settings
       // Else → assume ~80 sqft per panel (default fallback)
       if (roof_area_value && roof_area_value > 0) {
-        roofNeededSqft = panelCount * settings.panel_area_sqft;
+        roofNeededSqft = finalDcKw * settings.panel_area_sqft;
       } else {
-        roofNeededSqft = panelCount * 80; // fallback assumption
+        roofNeededSqft = finalDcKw * 80; // fallback assumption
       }
 
       let roofOk = null;
