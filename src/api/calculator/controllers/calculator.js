@@ -307,21 +307,7 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
   // --- Step 2: State top-up ---
   let state = 0;
 
-  // Special handling: Nagaland (percent-based scheme)
-  if (name.toLowerCase() === "nagaland") {
-    if (subsidyEligibleKw >= 1) {
-      // First 2 kW → 96% of benchmark
-      const upto2 = Math.min(subsidyEligibleKw, 2);
-      state += upto2 * (benchmarkCostPerKw * 0.96);
-    }
-    if (subsidyEligibleKw > 2) {
-      // Next 1 kW (2–3) → 85% of benchmark
-      const upto3 = subsidyEligibleKw - 2;
-      state += upto3 * (benchmarkCostPerKw * 0.85);
-    }
-    // Deduct central because above calc gave "effective subsidy"
-    state = state - central;
-  } else if (name.toLowerCase() === "manipur") {
+  if (name.toLowerCase() === "manipur") {
     // ✅ Manipur = 70% CFA up to 500 kW
     const cappedKw = Math.min(finalDcKw, 500);
     const totalCost = cappedKw * benchmarkCostPerKw;
