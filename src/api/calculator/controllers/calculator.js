@@ -477,6 +477,21 @@ const rwaSubsidyCalc = (
     return { central, state, total, eligibleKw };
   }
 
+  /* ✅ Telangana RWA / GHS rule */
+  if (name?.toLowerCase() === "telangana") {
+    // Cap at 500 kW
+    const eligibleKw = Math.min(finalDcKw, 500);
+
+    // Central CFA = ₹18,000 × eligible kW
+    const central = eligibleKw * 18000;
+
+    // State Subsidy = 20% of total cost
+    const totalCost = eligibleKw * benchmarkCostPerKw;
+    const state = totalCost * 0.2;
+
+    return { central, state, total: central + state, eligibleKw };
+  }
+
   if (rwa_mode !== "state_only") {
     central = eligibleKw * rwa_central_rate;
   }
