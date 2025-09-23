@@ -321,16 +321,18 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     }
     // Deduct central because above calc gave "effective subsidy"
     state = state - central;
-  } else if (name.toLowerCase() === "ladakh") {
+  } else if (name.toLowerCase() === "manipur") {
+    // ✅ Manipur = 70% CFA up to 500 kW
+    const cappedKw = Math.min(finalDcKw, 500);
+    const totalCost = cappedKw * benchmarkCostPerKw;
+    central = totalCost * 0.7; // CFA = 70% of benchmark cost
+    state = 0; // no extra state subsidy
+  }
+  else if (name.toLowerCase() === "ladakh") {
     // Ladakh = slab-based fixed top-up
     if (finalDcKw <= 1) state = 20000;
     else if (finalDcKw <= 2) state = 40000;
     else state = 50000; // for 3 kW and above
-  }
-  if (name.toLowerCase() === "nagaland") {
-    // ... existing Nagaland logic
-  } else if (name.toLowerCase() === "ladakh") {
-    // ... existing Ladakh logic
   } else if (name.toLowerCase() === "goa") {
     // ✅ Goa state subsidy logic
     const grossCost = finalDcKw * benchmarkCostPerKw;
