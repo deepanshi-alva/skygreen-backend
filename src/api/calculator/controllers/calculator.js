@@ -330,8 +330,7 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
       state = 0; // No subsidy above 30 kW
     }
   } else if (
-    name.toLowerCase() === "uttarakhand" ||
-    name.toLowerCase() === "puducherry"
+    name.toLowerCase() === "uttarakhand"
   ) {
     // State = 30% of benchmark × eligible kW
     state = subsidyEligibleKw * benchmarkCostPerKw * 0.3;
