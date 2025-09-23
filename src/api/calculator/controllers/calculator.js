@@ -191,7 +191,20 @@ function getBatteryOptions(finalDcKw, settings, inverterKw) {
     { ah: 200, nominal: (busV * 200) / 1000 },
   ];
 
-  lithiumOptions.forEach((opt) => {
+  // First compute max batteries for each lithium option
+  let lithiumWithCapacity = lithiumOptions.map((opt) => {
+    const maxPerDay = maxBatteriesPerDay(opt.nominal);
+    return { ...opt, maxPerDay };
+  });
+
+  // Find the max Ah battery that can be charged (>=1 per day)
+  let recommendedLithiumAh = null;
+  const eligible = lithiumWithCapacity.filter((opt) => opt.maxPerDay >= 1);
+  if (eligible.length > 0) {
+    recommendedLithiumAh = Math.max(...eligible.map((opt) => opt.ah));
+  }
+
+  lithiumWithCapacity.forEach((opt) => {
     const usable = opt.nominal * 0.85; // ~85% usable
     const b = backupHours(usable);
     output.push({
@@ -208,8 +221,8 @@ function getBatteryOptions(finalDcKw, settings, inverterKw) {
           : opt.ah === 150
             ? "Good balance of price vs backup. Suitable for households with occasional AC use."
             : "Higher cost, but gives the longest and most reliable backup.",
-      recommended: opt.ah === 200,
-      max_batteries_per_day: maxBatteriesPerDay(opt.nominal),
+      recommended: opt.ah === recommendedLithiumAh, // ✅ Dynamic recommendation
+      max_batteries_per_day: opt.maxPerDay,
       max_battery_ah: maxBatteryAh.toFixed(0),
     });
   });
@@ -453,7 +466,7 @@ const rwaSubsidyCalc = (
   let central = 0,
     state = 0;
 
-    /* ✅ Special handling: Himachal Pradesh */
+  /* ✅ Special handling: Himachal Pradesh */
   if (name?.toLowerCase().includes("himachal")) {
     // MNRE CFA → 20% of benchmark cost
     central = eligibleKw * benchmarkCostPerKw * 0.2;
