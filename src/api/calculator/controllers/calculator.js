@@ -329,6 +329,13 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     } else {
       state = 0; // No subsidy above 30 kW
     }
+  }
+  if (name.toLowerCase() === "telangana") {
+    // Step 2: SGST reimbursement (100% of 2.5%)
+    sgst = subsidyEligibleKw * benchmarkCostPerKw * 0.025;
+
+    // State subsidy = 0 (only SGST applied)
+    state = 0;
   } else if (name.toLowerCase() === "uttarakhand") {
     // State = 30% of benchmark × eligible kW
     state = subsidyEligibleKw * benchmarkCostPerKw * 0.3;
@@ -379,7 +386,6 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     state = Math.min(state, 60000); // cap safeguard
   } else if (
     name.toLowerCase() === "madhya pradesh" ||
-    name.toLowerCase() === "telangana" ||
     name.toLowerCase() === "maharashtra" ||
     name.toLowerCase() === "rajasthan"
   ) {
@@ -459,6 +465,22 @@ const rwaSubsidyCalc = (
   let central = 0,
     state = 0,
     sgst = 0;
+
+  if (name?.toLowerCase() === "telangana") {
+    // ✅ Telangana RWA Rule
+
+    // Step 1: Central CFA = ₹18,000/kW capped at 500 kW
+    central = eligibleKw * 18000;
+    central = Math.min(central, 500 * 18000); // max cap
+
+    sgst = eligibleKw * benchmarkCostPerKw * (0.025 * 0.5); // 50% refund
+
+    // No extra state subsidy
+    state = 0;
+
+    const total = central + sgst;
+    return { central, state, sgst, total, eligibleKw };
+  }
 
   /* ✅ Special handling: Himachal Pradesh */
   if (name?.toLowerCase().includes("himachal")) {
