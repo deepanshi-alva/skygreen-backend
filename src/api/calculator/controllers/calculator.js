@@ -21,8 +21,8 @@ function suggestSkuOptions(finalDcKw) {
             ratio === 1
               ? "Perfect match"
               : ratio > 1
-                ? "Over-paneling (clipping possible)"
-                : "Under-paneling (future expansion room)",
+              ? "Over-paneling (clipping possible)"
+              : "Under-paneling (future expansion room)",
         };
       }
       return null;
@@ -63,8 +63,8 @@ function getInverterOptions(finalDcKw) {
           ratio === 1
             ? "Perfect match, zero clipping"
             : ratio > 1
-              ? "Over-paneling (clipping possible)"
-              : "Under-paneling (future expansion room)",
+            ? "Over-paneling (clipping possible)"
+            : "Under-paneling (future expansion room)",
       });
     }
   });
@@ -219,8 +219,8 @@ function getBatteryOptions(finalDcKw, settings, inverterKw) {
         opt.ah === 100
           ? "Cheapest lithium option, but limited for heavy loads."
           : opt.ah === 150
-            ? "Good balance of price vs backup. Suitable for households with occasional AC use."
-            : "Higher cost, but gives the longest and most reliable backup.",
+          ? "Good balance of price vs backup. Suitable for households with occasional AC use."
+          : "Higher cost, but gives the longest and most reliable backup.",
       recommended: opt.ah === recommendedLithiumAh, // ✅ Dynamic recommendation
       max_batteries_per_day: opt.maxPerDay,
       max_battery_ah: maxBatteryAh.toFixed(0),
@@ -306,6 +306,7 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
 
   // --- Step 2: State top-up ---
   let state = 0;
+  let sgst = 0;
 
   if (name.toLowerCase() === "manipur") {
     // ✅ Manipur = 70% CFA up to 500 kW
@@ -313,8 +314,7 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     const totalCost = cappedKw * benchmarkCostPerKw;
     central = totalCost * 0.7; // CFA = 70% of benchmark cost
     state = 0; // no extra state subsidy
-  }
-  else if (name.toLowerCase() === "ladakh") {
+  } else if (name.toLowerCase() === "ladakh") {
     // Ladakh = slab-based fixed top-up
     if (finalDcKw <= 1) state = 20000;
     else if (finalDcKw <= 2) state = 40000;
@@ -329,11 +329,11 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     } else {
       state = 0; // No subsidy above 30 kW
     }
-  } else if (
-    name.toLowerCase() === "uttarakhand"
-  ) {
+  } else if (name.toLowerCase() === "uttarakhand") {
     // State = 30% of benchmark × eligible kW
     state = subsidyEligibleKw * benchmarkCostPerKw * 0.3;
+    // ✅ Step 3: SGST reimbursement (50% of SGST @ 2.5%)
+    sgst = subsidyEligibleKw * benchmarkCostPerKw * (0.025 * 0.5);
   } else if (
     name.toLowerCase() === "haryana" ||
     name.toLowerCase() === "chandigarh" ||
@@ -365,8 +365,13 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     }
   } else if (name.toLowerCase() === "uttar pradesh") {
     // --- State top-up (₹15k/kW up to 2 kW, max 30k) ---
-    const eligibleStateKw = Math.min(finalDcKw, 2);
-    state = Math.min(eligibleStateKw * 15000, 30000);
+    const eligibleStateKw = Math.min(finalDcKw, 10);
+
+    if (eligibleStateKw <= 10) {
+      state = Math.min(eligibleStateKw * 15000, 30000);
+    } else {
+      state = 0;
+    }
   } else if (name.toLowerCase() === "lakshadweep") {
     // Lakshadweep = 10% of system cost (1–3 kW), capped 60k
     const topUpPerKw = benchmarkCostPerKw * 0.1;
@@ -416,8 +421,8 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
   }
 
   // --- Step 3: Total ---
-  const total = central + state;
-  return { central, state, total, eligibleKw: subsidyEligibleKw };
+  const total = central + state + sgst;
+  return { central, state, sgst, total, eligibleKw: subsidyEligibleKw };
 };
 
 /* ----------------- RWA / GHS Subsidy calculator ----------------- */
@@ -439,7 +444,7 @@ const rwaSubsidyCalc = (
   } = stateData;
 
   if (!rwa_enabled || rwa_mode === "none") {
-    return { central: 0, state: 0, total: 0, eligibleKw: 0 };
+    return { central: 0, state: 0, sgst: 0, total: 0, eligibleKw: 0 };
   }
 
   console.log("entered into the rwa subsidy function", rwa_mode);
@@ -452,7 +457,8 @@ const rwaSubsidyCalc = (
   console.log("this is eligible", finalDcKw, rwa_total_cap_kw, eligibleKw);
 
   let central = 0,
-    state = 0;
+    state = 0,
+    sgst = 0;
 
   /* ✅ Special handling: Himachal Pradesh */
   if (name?.toLowerCase().includes("himachal")) {
@@ -490,6 +496,26 @@ const rwaSubsidyCalc = (
     const state = totalCost * 0.2;
 
     return { central, state, total: central + state, eligibleKw };
+  }
+
+  /* ✅ Uttarakhand RWA / GHS rule */
+  if (name?.toLowerCase() === "uttarakhand") {
+    // Step 2: Eligible capacity
+    const eligibleKw = Math.min(finalDcKw, 500);
+
+    // Step 3: Central CFA
+    const central = eligibleKw * 18000;
+
+    // Step 4: No state subsidy
+    const state = 0;
+
+    // Step 5: SGST reimbursement (50% of 2.5%)
+    const sgst = eligibleKw * benchmarkCostPerKw * 0.0125;
+
+    // Step 6: Total
+    const total = central + sgst;
+
+    return { central, state, sgst, total, eligibleKw };
   }
 
   if (rwa_mode !== "state_only") {
@@ -691,17 +717,18 @@ module.exports = {
       // Step 5: Subsidy Eligible KW
       const subsidyResult = is_rwa
         ? rwaSubsidyCalc(
-          finalDcKw,
-          stateData,
-          settings.rwa_cost_inr_per_kw,
-          per_house_sanctioned_load_kw,
-          num_houses
-        )
+            finalDcKw,
+            stateData,
+            settings.rwa_cost_inr_per_kw,
+            per_house_sanctioned_load_kw,
+            num_houses
+          )
         : subsidyCalc(finalDcKw, stateData, settings.cost_inr_per_kw);
 
       const {
         central: centralSubsidyInr,
         state: stateSubsidyInr,
+        sgst: sgstSubsidyInr,
         total: totalSubsidyInr,
         eligibleKw,
       } = subsidyResult;
@@ -819,6 +846,7 @@ module.exports = {
         daily_unit: dailyUnit,
         central_subsidy_inr: centralSubsidyInr,
         state_subsidy: stateSubsidyInr,
+        sgst_subsidy: sgstSubsidyInr,
         total_subsidy: totalSubsidyInr,
         eligibleKw: eligibleKw,
         gross_cost_inr: grossCostInr,
