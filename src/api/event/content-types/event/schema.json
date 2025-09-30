@@ -35,6 +35,14 @@
     },
     "meta": {
       "type": "text"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "News",
+        "Blog",
+        "Event"
+      ]
     }
   }
 }

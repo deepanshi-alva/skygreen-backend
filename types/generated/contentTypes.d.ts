@@ -799,34 +799,6 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
   };
 }
 
-export interface ApiBlogBlog extends Schema.CollectionType {
-  collectionName: 'blogs';
-  info: {
-    singularName: 'blog';
-    pluralName: 'blogs';
-    displayName: 'Blog';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    title: Attribute.Text;
-    description: Attribute.Text;
-    image: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    tag: Attribute.Text;
-    link_of_article: Attribute.Text;
-    meta: Attribute.Text;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<'api::blog.blog', 'oneToOne', 'admin::user'> &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<'api::blog.blog', 'oneToOne', 'admin::user'> &
-      Attribute.Private;
-  };
-}
-
 export interface ApiCalculatorSettingCalculatorSetting
   extends Schema.SingleType {
   collectionName: 'calculator_settings';
@@ -923,6 +895,7 @@ export interface ApiEventEvent extends Schema.CollectionType {
     tag: Attribute.Text;
     link_of_article: Attribute.Text;
     meta: Attribute.Text;
+    type: Attribute.Enumeration<['News', 'Blog', 'Event']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -934,42 +907,6 @@ export interface ApiEventEvent extends Schema.CollectionType {
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::event.event',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-  };
-}
-
-export interface ApiHeadlineHeadline extends Schema.CollectionType {
-  collectionName: 'headlines';
-  info: {
-    singularName: 'headline';
-    pluralName: 'headlines';
-    displayName: 'Headline';
-    description: '';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    title: Attribute.Text;
-    description: Attribute.Text;
-    image: Attribute.Media<'images' | 'videos'>;
-    tag: Attribute.Text;
-    link_of_article: Attribute.Text;
-    meta: Attribute.Text;
-    createdAt: Attribute.DateTime;
-    updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
-    createdBy: Attribute.Relation<
-      'api::headline.headline',
-      'oneToOne',
-      'admin::user'
-    > &
-      Attribute.Private;
-    updatedBy: Attribute.Relation<
-      'api::headline.headline',
       'oneToOne',
       'admin::user'
     > &
@@ -1226,11 +1163,9 @@ declare module '@strapi/types' {
       'plugin::users-permissions.permission': PluginUsersPermissionsPermission;
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
-      'api::blog.blog': ApiBlogBlog;
       'api::calculator-setting.calculator-setting': ApiCalculatorSettingCalculatorSetting;
       'api::contact-us.contact-us': ApiContactUsContactUs;
       'api::event.event': ApiEventEvent;
-      'api::headline.headline': ApiHeadlineHeadline;
       'api::join-us.join-us': ApiJoinUsJoinUs;
       'api::state.state': ApiStateState;
       'api::testimonial.testimonial': ApiTestimonialTestimonial;
