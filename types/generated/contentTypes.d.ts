@@ -896,6 +896,7 @@ export interface ApiEventEvent extends Schema.CollectionType {
     link_of_article: Attribute.Text;
     meta: Attribute.Text;
     type: Attribute.Enumeration<['News', 'Blog', 'Event']>;
+    start_date: Attribute.Date;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

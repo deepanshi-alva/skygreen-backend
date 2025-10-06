@@ -43,6 +43,9 @@
         "Blog",
         "Event"
       ]
+    },
+    "start_date": {
+      "type": "date"
     }
   }
 }
