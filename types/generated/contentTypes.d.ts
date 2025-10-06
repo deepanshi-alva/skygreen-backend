@@ -953,6 +953,44 @@ export interface ApiJoinUsJoinUs extends Schema.CollectionType {
   };
 }
 
+export interface ApiReportReport extends Schema.CollectionType {
+  collectionName: 'reports';
+  info: {
+    singularName: 'report';
+    pluralName: 'reports';
+    displayName: 'Report';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    report_token: Attribute.UID;
+    address: Attribute.String;
+    pdf_file: Attribute.Media<'files'>;
+    status: Attribute.Enumeration<['pending', 'verified', 'expired']>;
+    verified: Attribute.Boolean;
+    whatsapp_number: Attribute.String;
+    name: Attribute.String;
+    email: Attribute.String;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::report.report',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::report.report',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiStateState extends Schema.CollectionType {
   collectionName: 'states';
   info: {
@@ -1168,6 +1206,7 @@ declare module '@strapi/types' {
       'api::contact-us.contact-us': ApiContactUsContactUs;
       'api::event.event': ApiEventEvent;
       'api::join-us.join-us': ApiJoinUsJoinUs;
+      'api::report.report': ApiReportReport;
       'api::state.state': ApiStateState;
       'api::testimonial.testimonial': ApiTestimonialTestimonial;
     }
