@@ -966,13 +966,11 @@ export interface ApiReportReport extends Schema.CollectionType {
   };
   attributes: {
     report_token: Attribute.UID;
-    address: Attribute.String;
     pdf_file: Attribute.Media<'files'>;
     status: Attribute.Enumeration<['pending', 'verified', 'expired']>;
     verified: Attribute.Boolean;
     whatsapp_number: Attribute.String;
     name: Attribute.String;
-    email: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

@@ -15,9 +15,6 @@
     "report_token": {
       "type": "uid"
     },
-    "address": {
-      "type": "string"
-    },
     "pdf_file": {
       "type": "media",
       "multiple": false,
@@ -41,9 +38,6 @@
       "type": "string"
     },
     "name": {
-      "type": "string"
-    },
-    "email": {
       "type": "string"
     }
   }
