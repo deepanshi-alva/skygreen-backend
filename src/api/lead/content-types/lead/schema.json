@@ -4,7 +4,8 @@
   "info": {
     "singularName": "lead",
     "pluralName": "leads",
-    "displayName": "Lead"
+    "displayName": "Lead",
+    "description": ""
   },
   "options": {
     "draftAndPublish": true
@@ -18,11 +19,11 @@
       "type": "string",
       "required": true
     },
-    "number": {
+    "phone_number": {
       "type": "string",
       "required": true
     },
-    "email": {
+    "email_address": {
       "type": "email"
     },
     "lead_source": {
@@ -33,7 +34,7 @@
         "contact us",
         "ads",
         "referral",
-        "call",
+        "direct call",
         "whatsapp",
         "email"
       ]
@@ -163,10 +164,7 @@
       ]
     },
     "additional_notes": {
-      "type": "string"
-    },
-    "country": {
-      "type": "string"
+      "type": "text"
     },
     "state": {
       "type": "string"
@@ -181,7 +179,7 @@
       "type": "string"
     },
     "company_name": {
-      "type": "text"
+      "type": "string"
     },
     "gst_number": {
       "type": "string"
@@ -206,6 +204,14 @@
     },
     "number_of_sites": {
       "type": "string"
+    },
+    "battery_type": {
+      "type": "enumeration",
+      "enum": [
+        "lithium",
+        "tubular",
+        "flat"
+      ]
     }
   }
 }

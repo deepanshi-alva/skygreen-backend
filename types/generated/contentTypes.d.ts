@@ -959,6 +959,7 @@ export interface ApiLeadLead extends Schema.CollectionType {
     singularName: 'lead';
     pluralName: 'leads';
     displayName: 'Lead';
+    description: '';
   };
   options: {
     draftAndPublish: true;
@@ -966,8 +967,8 @@ export interface ApiLeadLead extends Schema.CollectionType {
   attributes: {
     lead_id: Attribute.UID;
     full_name: Attribute.String & Attribute.Required;
-    number: Attribute.String & Attribute.Required;
-    email: Attribute.Email;
+    phone_number: Attribute.String & Attribute.Required;
+    email_address: Attribute.Email;
     lead_source: Attribute.Enumeration<
       [
         'calculator',
@@ -975,7 +976,7 @@ export interface ApiLeadLead extends Schema.CollectionType {
         'contact us',
         'ads',
         'referral',
-        'call',
+        'direct call',
         'whatsapp',
         'email'
       ]
@@ -1027,13 +1028,12 @@ export interface ApiLeadLead extends Schema.CollectionType {
     installation_timeline: Attribute.Enumeration<
       ['one month', 'three month', 'six month', 'urgent']
     >;
-    additional_notes: Attribute.String;
-    country: Attribute.String;
+    additional_notes: Attribute.Text;
     state: Attribute.String;
     city: Attribute.String;
     pincode: Attribute.String;
     full_address: Attribute.String;
-    company_name: Attribute.Text;
+    company_name: Attribute.String;
     gst_number: Attribute.String;
     industry_type: Attribute.Enumeration<
       ['Textile', 'Education', 'Food', 'Hospital', 'Retail']
@@ -1042,6 +1042,7 @@ export interface ApiLeadLead extends Schema.CollectionType {
       ['Owner', 'Manager', 'Purchase Head']
     >;
     number_of_sites: Attribute.String;
+    battery_type: Attribute.Enumeration<['lithium', 'tubular', 'flat']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
