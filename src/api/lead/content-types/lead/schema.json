@@ -1,0 +1,211 @@
+{
+  "kind": "collectionType",
+  "collectionName": "leads",
+  "info": {
+    "singularName": "lead",
+    "pluralName": "leads",
+    "displayName": "Lead"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "lead_id": {
+      "type": "uid"
+    },
+    "full_name": {
+      "type": "string",
+      "required": true
+    },
+    "number": {
+      "type": "string",
+      "required": true
+    },
+    "email": {
+      "type": "email"
+    },
+    "lead_source": {
+      "type": "enumeration",
+      "enum": [
+        "calculator",
+        "join us",
+        "contact us",
+        "ads",
+        "referral",
+        "call",
+        "whatsapp",
+        "email"
+      ]
+    },
+    "gender": {
+      "type": "enumeration",
+      "enum": [
+        "Male",
+        "Female",
+        "Others"
+      ]
+    },
+    "preferred_language": {
+      "type": "enumeration",
+      "enum": [
+        "Hindi",
+        "English"
+      ]
+    },
+    "campaign_utm_name": {
+      "type": "enumeration",
+      "enum": [
+        "DiwaliPromo2025"
+      ]
+    },
+    "inquiry_medium": {
+      "type": "enumeration",
+      "enum": [
+        "organic",
+        "paid",
+        "referral"
+      ]
+    },
+    "submission_time": {
+      "type": "datetime"
+    },
+    "user_category": {
+      "type": "enumeration",
+      "enum": [
+        "Residential",
+        "Commercial",
+        "Industrial",
+        "Agricultural",
+        "Institutional",
+        "Govt",
+        "NGO"
+      ]
+    },
+    "customer_type": {
+      "type": "enumeration",
+      "enum": [
+        "Individual",
+        "Dealer",
+        "Distributor",
+        "EPC",
+        "Consultant"
+      ]
+    },
+    "ownership_type": {
+      "type": "enumeration",
+      "enum": [
+        "Owner",
+        "Tenant",
+        "Housing Society",
+        "Corporate"
+      ]
+    },
+    "decision_stage": {
+      "type": "enumeration",
+      "enum": [
+        "Exploring",
+        "Planning",
+        "Urgent",
+        "Already Installed"
+      ]
+    },
+    "requirement_type": {
+      "type": "enumeration",
+      "enum": [
+        "Rooftop",
+        "Ground-mounted",
+        "Hybrid",
+        "Off-grid",
+        "On-grid",
+        "EPC Needed",
+        "AMC Request"
+      ]
+    },
+    "problem_objective": {
+      "type": "text"
+    },
+    "system_size": {
+      "type": "biginteger"
+    },
+    "budget_range": {
+      "type": "string"
+    },
+    "battery_required": {
+      "type": "boolean",
+      "default": false
+    },
+    "inverter_preference": {
+      "type": "enumeration",
+      "enum": [
+        "String",
+        "Micro",
+        "Hybrid",
+        "Not sure"
+      ]
+    },
+    "mounting_type": {
+      "type": "enumeration",
+      "enum": [
+        "RCC",
+        "Tin",
+        "Ground",
+        "Carport"
+      ]
+    },
+    "installation_timeline": {
+      "type": "enumeration",
+      "enum": [
+        "one month",
+        "three month",
+        "six month",
+        "urgent"
+      ]
+    },
+    "additional_notes": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "pincode": {
+      "type": "string"
+    },
+    "full_address": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "text"
+    },
+    "gst_number": {
+      "type": "string"
+    },
+    "industry_type": {
+      "type": "enumeration",
+      "enum": [
+        "Textile",
+        "Education",
+        "Food",
+        "Hospital",
+        "Retail"
+      ]
+    },
+    "contact_role_in_company": {
+      "type": "enumeration",
+      "enum": [
+        "Owner",
+        "Manager",
+        "Purchase Head"
+      ]
+    },
+    "number_of_sites": {
+      "type": "string"
+    }
+  }
+}

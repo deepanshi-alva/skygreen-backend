@@ -953,6 +953,105 @@ export interface ApiJoinUsJoinUs extends Schema.CollectionType {
   };
 }
 
+export interface ApiLeadLead extends Schema.CollectionType {
+  collectionName: 'leads';
+  info: {
+    singularName: 'lead';
+    pluralName: 'leads';
+    displayName: 'Lead';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    lead_id: Attribute.UID;
+    full_name: Attribute.String & Attribute.Required;
+    number: Attribute.String & Attribute.Required;
+    email: Attribute.Email;
+    lead_source: Attribute.Enumeration<
+      [
+        'calculator',
+        'join us',
+        'contact us',
+        'ads',
+        'referral',
+        'call',
+        'whatsapp',
+        'email'
+      ]
+    >;
+    gender: Attribute.Enumeration<['Male', 'Female', 'Others']>;
+    preferred_language: Attribute.Enumeration<['Hindi', 'English']>;
+    campaign_utm_name: Attribute.Enumeration<['DiwaliPromo2025']>;
+    inquiry_medium: Attribute.Enumeration<['organic', 'paid', 'referral']>;
+    submission_time: Attribute.DateTime;
+    user_category: Attribute.Enumeration<
+      [
+        'Residential',
+        'Commercial',
+        'Industrial',
+        'Agricultural',
+        'Institutional',
+        'Govt',
+        'NGO'
+      ]
+    >;
+    customer_type: Attribute.Enumeration<
+      ['Individual', 'Dealer', 'Distributor', 'EPC', 'Consultant']
+    >;
+    ownership_type: Attribute.Enumeration<
+      ['Owner', 'Tenant', 'Housing Society', 'Corporate']
+    >;
+    decision_stage: Attribute.Enumeration<
+      ['Exploring', 'Planning', 'Urgent', 'Already Installed']
+    >;
+    requirement_type: Attribute.Enumeration<
+      [
+        'Rooftop',
+        'Ground-mounted',
+        'Hybrid',
+        'Off-grid',
+        'On-grid',
+        'EPC Needed',
+        'AMC Request'
+      ]
+    >;
+    problem_objective: Attribute.Text;
+    system_size: Attribute.BigInteger;
+    budget_range: Attribute.String;
+    battery_required: Attribute.Boolean & Attribute.DefaultTo<false>;
+    inverter_preference: Attribute.Enumeration<
+      ['String', 'Micro', 'Hybrid', 'Not sure']
+    >;
+    mounting_type: Attribute.Enumeration<['RCC', 'Tin', 'Ground', 'Carport']>;
+    installation_timeline: Attribute.Enumeration<
+      ['one month', 'three month', 'six month', 'urgent']
+    >;
+    additional_notes: Attribute.String;
+    country: Attribute.String;
+    state: Attribute.String;
+    city: Attribute.String;
+    pincode: Attribute.String;
+    full_address: Attribute.String;
+    company_name: Attribute.Text;
+    gst_number: Attribute.String;
+    industry_type: Attribute.Enumeration<
+      ['Textile', 'Education', 'Food', 'Hospital', 'Retail']
+    >;
+    contact_role_in_company: Attribute.Enumeration<
+      ['Owner', 'Manager', 'Purchase Head']
+    >;
+    number_of_sites: Attribute.String;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<'api::lead.lead', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<'api::lead.lead', 'oneToOne', 'admin::user'> &
+      Attribute.Private;
+  };
+}
+
 export interface ApiReportReport extends Schema.CollectionType {
   collectionName: 'reports';
   info: {
@@ -1204,6 +1303,7 @@ declare module '@strapi/types' {
       'api::contact-us.contact-us': ApiContactUsContactUs;
       'api::event.event': ApiEventEvent;
       'api::join-us.join-us': ApiJoinUsJoinUs;
+      'api::lead.lead': ApiLeadLead;
       'api::report.report': ApiReportReport;
       'api::state.state': ApiStateState;
       'api::testimonial.testimonial': ApiTestimonialTestimonial;
