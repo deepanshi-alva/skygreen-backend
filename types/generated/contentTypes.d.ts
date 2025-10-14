@@ -1042,7 +1042,7 @@ export interface ApiLeadLead extends Schema.CollectionType {
       ['Owner', 'Manager', 'Purchase Head']
     >;
     number_of_sites: Attribute.String;
-    battery_type: Attribute.Enumeration<['lithium', 'tubular', 'flat']>;
+    battery_type: Attribute.Enumeration<['lithium', 'tubular', 'flat plate']>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
