@@ -75,6 +75,7 @@
       "type": "enumeration",
       "enum": [
         "Residential",
+        "RWA",
         "Commercial",
         "Industrial",
         "Agricultural",
@@ -86,10 +87,11 @@
     "customer_type": {
       "type": "enumeration",
       "enum": [
-        "Individual",
+        "Installer",
         "Dealer",
         "Distributor",
-        "EPC",
+        "Retailer",
+        "EPC Company",
         "Consultant"
       ]
     },
@@ -212,6 +214,9 @@
         "tubular",
         "flat plate"
       ]
+    },
+    "calculator_report_token": {
+      "type": "string"
     }
   }
 }

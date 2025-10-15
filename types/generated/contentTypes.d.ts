@@ -989,6 +989,7 @@ export interface ApiLeadLead extends Schema.CollectionType {
     user_category: Attribute.Enumeration<
       [
         'Residential',
+        'RWA',
         'Commercial',
         'Industrial',
         'Agricultural',
@@ -998,7 +999,14 @@ export interface ApiLeadLead extends Schema.CollectionType {
       ]
     >;
     customer_type: Attribute.Enumeration<
-      ['Individual', 'Dealer', 'Distributor', 'EPC', 'Consultant']
+      [
+        'Installer',
+        'Dealer',
+        'Distributor',
+        'Retailer',
+        'EPC Company',
+        'Consultant'
+      ]
     >;
     ownership_type: Attribute.Enumeration<
       ['Owner', 'Tenant', 'Housing Society', 'Corporate']
@@ -1043,6 +1051,7 @@ export interface ApiLeadLead extends Schema.CollectionType {
     >;
     number_of_sites: Attribute.String;
     battery_type: Attribute.Enumeration<['lithium', 'tubular', 'flat plate']>;
+    calculator_report_token: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
@@ -1067,8 +1076,6 @@ export interface ApiReportReport extends Schema.CollectionType {
   attributes: {
     report_token: Attribute.UID;
     pdf_file: Attribute.Media<'files'>;
-    status: Attribute.Enumeration<['pending', 'verified', 'expired']>;
-    verified: Attribute.Boolean;
     whatsapp_number: Attribute.String;
     name: Attribute.String;
     createdAt: Attribute.DateTime;

@@ -23,17 +23,6 @@
         "files"
       ]
     },
-    "status": {
-      "type": "enumeration",
-      "enum": [
-        "pending",
-        "verified",
-        "expired"
-      ]
-    },
-    "verified": {
-      "type": "boolean"
-    },
     "whatsapp_number": {
       "type": "string"
     },
