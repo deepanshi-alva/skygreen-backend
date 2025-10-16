@@ -1052,6 +1052,9 @@ export interface ApiLeadLead extends Schema.CollectionType {
     number_of_sites: Attribute.String;
     battery_type: Attribute.Enumeration<['lithium', 'tubular', 'flat plate']>;
     calculator_report_token: Attribute.String;
+    scheduled_date: Attribute.Date;
+    scheduled_time: Attribute.String;
+    calculator_pdf: Attribute.Media<'files'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;

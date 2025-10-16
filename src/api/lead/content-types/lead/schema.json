@@ -217,6 +217,19 @@
     },
     "calculator_report_token": {
       "type": "string"
+    },
+    "scheduled_date": {
+      "type": "date"
+    },
+    "scheduled_time": {
+      "type": "string"
+    },
+    "calculator_pdf": {
+      "allowedTypes": [
+        "files"
+      ],
+      "type": "media",
+      "multiple": false
     }
   }
 }
