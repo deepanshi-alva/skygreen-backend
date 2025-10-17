@@ -898,6 +898,7 @@ export interface ApiEventEvent extends Schema.CollectionType {
     type: Attribute.Enumeration<['News', 'Blog', 'Event']>;
     start_date: Attribute.Date;
     additional_media: Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
+    button_text: Attribute.Text;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     publishedAt: Attribute.DateTime;
