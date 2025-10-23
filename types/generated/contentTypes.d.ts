@@ -1067,6 +1067,83 @@ export interface ApiLeadLead extends Schema.CollectionType {
   };
 }
 
+export interface ApiMessageTemplateMessageTemplate
+  extends Schema.CollectionType {
+  collectionName: 'message_templates';
+  info: {
+    singularName: 'message-template';
+    pluralName: 'message-templates';
+    displayName: 'Message Template';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    subject: Attribute.String & Attribute.Required;
+    message: Attribute.Blocks & Attribute.Required;
+    sender_email: Attribute.Email;
+    recipient_email: Attribute.Email;
+    email_type: Attribute.Enumeration<
+      ['WELCOME', 'RESET_PASSWORD', 'VERIFY_EMAIL', 'VERIFY_OTP', 'SEND_OTP']
+    > &
+      Attribute.Required;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::message-template.message-template',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::message-template.message-template',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiOtpVerificationOtpVerification
+  extends Schema.CollectionType {
+  collectionName: 'otp_verifications';
+  info: {
+    singularName: 'otp-verification';
+    pluralName: 'otp-verifications';
+    displayName: 'Otp Verification';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    email: Attribute.String;
+    otp_number: Attribute.String;
+    is_verified: Attribute.Boolean & Attribute.DefaultTo<false>;
+    expires_in: Attribute.DateTime;
+    otp_count: Attribute.Integer & Attribute.DefaultTo<1>;
+    blockUntil: Attribute.DateTime;
+    attempt_count: Attribute.Integer & Attribute.DefaultTo<0>;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::otp-verification.otp-verification',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::otp-verification.otp-verification',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiReportReport extends Schema.CollectionType {
   collectionName: 'reports';
   info: {
@@ -1317,6 +1394,8 @@ declare module '@strapi/types' {
       'api::event.event': ApiEventEvent;
       'api::join-us.join-us': ApiJoinUsJoinUs;
       'api::lead.lead': ApiLeadLead;
+      'api::message-template.message-template': ApiMessageTemplateMessageTemplate;
+      'api::otp-verification.otp-verification': ApiOtpVerificationOtpVerification;
       'api::report.report': ApiReportReport;
       'api::state.state': ApiStateState;
       'api::testimonial.testimonial': ApiTestimonialTestimonial;

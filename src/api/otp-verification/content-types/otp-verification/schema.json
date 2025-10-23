@@ -1,0 +1,40 @@
+{
+  "kind": "collectionType",
+  "collectionName": "otp_verifications",
+  "info": {
+    "singularName": "otp-verification",
+    "pluralName": "otp-verifications",
+    "displayName": "Otp Verification",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "email": {
+      "type": "string"
+    },
+    "otp_number": {
+      "type": "string"
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false
+    },
+    "expires_in": {
+      "type": "datetime"
+    },
+    "otp_count": {
+      "type": "integer",
+      "default": 1
+    },
+    "blockUntil":{
+      "type": "datetime"
+    },
+    "attempt_count": {
+      "type": "integer",
+      "default": 0
+    }
+  }
+}

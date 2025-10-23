@@ -1,0 +1,41 @@
+{
+  "kind": "collectionType",
+  "collectionName": "message_templates",
+  "info": {
+    "singularName": "message-template",
+    "pluralName": "message-templates",
+    "displayName": "Message Template",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "subject": {
+      "type": "string",
+      "required": true
+    },
+    "message": {
+      "type": "blocks",
+      "required": true
+    },
+    "sender_email": {
+      "type": "email"
+    },
+    "recipient_email": {
+      "type": "email"
+    },
+    "email_type": {
+      "type": "enumeration",
+      "enum": [
+        "WELCOME",
+        "RESET_PASSWORD",
+        "VERIFY_EMAIL",
+        "VERIFY_OTP",
+        "SEND_OTP"
+      ],
+      "required": true
+    }
+  }
+}
