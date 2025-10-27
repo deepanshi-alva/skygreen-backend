@@ -82,6 +82,12 @@
     },
     "phone_number": {
       "type": "biginteger"
+    },
+    "company": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::company.company",
+      "inversedBy": "employers"
     }
   }
 }

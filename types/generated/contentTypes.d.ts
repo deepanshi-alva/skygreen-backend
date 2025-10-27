@@ -782,6 +782,11 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
     >;
     full_name: Attribute.String;
     phone_number: Attribute.BigInteger;
+    company: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToOne',
+      'api::company.company'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -831,6 +836,45 @@ export interface ApiCalculatorSettingCalculatorSetting
       Attribute.Private;
     updatedBy: Attribute.Relation<
       'api::calculator-setting.calculator-setting',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
+export interface ApiCompanyCompany extends Schema.CollectionType {
+  collectionName: 'companies';
+  info: {
+    singularName: 'company';
+    pluralName: 'companies';
+    displayName: 'Company';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    name: Attribute.String;
+    domain: Attribute.Text;
+    subscription_plan: Attribute.Enumeration<
+      ['FREE', 'BASIC', 'PRO', 'ENTERPRISE']
+    >;
+    employers: Attribute.Relation<
+      'api::company.company',
+      'oneToMany',
+      'plugin::users-permissions.user'
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::company.company',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::company.company',
       'oneToOne',
       'admin::user'
     > &
@@ -1390,6 +1434,7 @@ declare module '@strapi/types' {
       'plugin::users-permissions.role': PluginUsersPermissionsRole;
       'plugin::users-permissions.user': PluginUsersPermissionsUser;
       'api::calculator-setting.calculator-setting': ApiCalculatorSettingCalculatorSetting;
+      'api::company.company': ApiCompanyCompany;
       'api::contact-us.contact-us': ApiContactUsContactUs;
       'api::event.event': ApiEventEvent;
       'api::join-us.join-us': ApiJoinUsJoinUs;
