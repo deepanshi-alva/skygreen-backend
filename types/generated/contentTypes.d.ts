@@ -770,22 +770,21 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToOne',
       'plugin::users-permissions.role'
     >;
-    clients: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'oneToMany',
-      'plugin::users-permissions.user'
-    >;
-    handler: Attribute.Relation<
-      'plugin::users-permissions.user',
-      'manyToOne',
-      'plugin::users-permissions.user'
-    >;
-    full_name: Attribute.String;
     phone_number: Attribute.BigInteger;
     company: Attribute.Relation<
       'plugin::users-permissions.user',
       'manyToOne',
       'api::company.company'
+    >;
+    team_members: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'plugin::users-permissions.user'
+    >;
+    team_leader: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'manyToOne',
+      'plugin::users-permissions.user'
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
@@ -1188,6 +1187,45 @@ export interface ApiOtpVerificationOtpVerification
   };
 }
 
+export interface ApiQueriesDeveloperQueriesDeveloper
+  extends Schema.CollectionType {
+  collectionName: 'queries_developers';
+  info: {
+    singularName: 'queries-developer';
+    pluralName: 'queries-developers';
+    displayName: 'Queries Developer';
+    description: '';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    name: Attribute.String;
+    role: Attribute.String;
+    contact_number: Attribute.String;
+    query: Attribute.Text;
+    related_media: Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    publishedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::queries-developer.queries-developer',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::queries-developer.queries-developer',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 export interface ApiReportReport extends Schema.CollectionType {
   collectionName: 'reports';
   info: {
@@ -1441,6 +1479,7 @@ declare module '@strapi/types' {
       'api::lead.lead': ApiLeadLead;
       'api::message-template.message-template': ApiMessageTemplateMessageTemplate;
       'api::otp-verification.otp-verification': ApiOtpVerificationOtpVerification;
+      'api::queries-developer.queries-developer': ApiQueriesDeveloperQueriesDeveloper;
       'api::report.report': ApiReportReport;
       'api::state.state': ApiStateState;
       'api::testimonial.testimonial': ApiTestimonialTestimonial;

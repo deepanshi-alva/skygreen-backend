@@ -65,21 +65,6 @@
       "inversedBy": "users",
       "configurable": false
     },
-    "clients": {
-      "type": "relation",
-      "relation": "oneToMany",
-      "target": "plugin::users-permissions.user",
-      "mappedBy": "handler"
-    },
-    "handler": {
-      "type": "relation",
-      "relation": "manyToOne",
-      "target": "plugin::users-permissions.user",
-      "inversedBy": "clients"
-    },
-    "full_name": {
-      "type": "string"
-    },
     "phone_number": {
       "type": "biginteger"
     },
@@ -88,6 +73,18 @@
       "relation": "manyToOne",
       "target": "api::company.company",
       "inversedBy": "employers"
+    },
+    "team_members": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "plugin::users-permissions.user",
+      "mappedBy": "team_leader"
+    },
+    "team_leader": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "team_members"
     }
   }
 }
