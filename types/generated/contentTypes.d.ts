@@ -786,6 +786,14 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToOne',
       'plugin::users-permissions.user'
     >;
+    is_online: Attribute.Boolean;
+    last_login: Attribute.DateTime;
+    last_logout: Attribute.DateTime;
+    attendance_records: Attribute.Relation<
+      'plugin::users-permissions.user',
+      'oneToMany',
+      'api::user-activity.user-activity'
+    >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
@@ -890,7 +898,7 @@ export interface ApiContactUsContactUs extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     name: Attribute.String;
@@ -904,7 +912,6 @@ export interface ApiContactUsContactUs extends Schema.CollectionType {
     gender: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::contact-us.contact-us',
       'oneToOne',
@@ -969,7 +976,7 @@ export interface ApiJoinUsJoinUs extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     name: Attribute.String;
@@ -982,7 +989,6 @@ export interface ApiJoinUsJoinUs extends Schema.CollectionType {
     gender: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::join-us.join-us',
       'oneToOne',
@@ -1007,7 +1013,7 @@ export interface ApiLeadLead extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     lead_id: Attribute.UID;
@@ -1102,7 +1108,6 @@ export interface ApiLeadLead extends Schema.CollectionType {
     calculator_pdf: Attribute.Media<'files'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<'api::lead.lead', 'oneToOne', 'admin::user'> &
       Attribute.Private;
     updatedBy: Attribute.Relation<'api::lead.lead', 'oneToOne', 'admin::user'> &
@@ -1159,7 +1164,7 @@ export interface ApiOtpVerificationOtpVerification
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     email: Attribute.String;
@@ -1171,7 +1176,6 @@ export interface ApiOtpVerificationOtpVerification
     attempt_count: Attribute.Integer & Attribute.DefaultTo<0>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::otp-verification.otp-verification',
       'oneToOne',
@@ -1197,7 +1201,7 @@ export interface ApiQueriesDeveloperQueriesDeveloper
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     name: Attribute.String;
@@ -1210,7 +1214,6 @@ export interface ApiQueriesDeveloperQueriesDeveloper
     >;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::queries-developer.queries-developer',
       'oneToOne',
@@ -1235,7 +1238,7 @@ export interface ApiReportReport extends Schema.CollectionType {
     description: '';
   };
   options: {
-    draftAndPublish: true;
+    draftAndPublish: false;
   };
   attributes: {
     report_token: Attribute.UID;
@@ -1244,7 +1247,6 @@ export interface ApiReportReport extends Schema.CollectionType {
     name: Attribute.String;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
-    publishedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<
       'api::report.report',
       'oneToOne',
@@ -1453,6 +1455,44 @@ export interface ApiTestimonialTestimonial extends Schema.CollectionType {
   };
 }
 
+export interface ApiUserActivityUserActivity extends Schema.CollectionType {
+  collectionName: 'user_activities';
+  info: {
+    singularName: 'user-activity';
+    pluralName: 'user-activities';
+    displayName: 'User Activity';
+    description: '';
+  };
+  options: {
+    draftAndPublish: false;
+  };
+  attributes: {
+    user: Attribute.Relation<
+      'api::user-activity.user-activity',
+      'manyToOne',
+      'plugin::users-permissions.user'
+    >;
+    login_time: Attribute.DateTime;
+    logout_time: Attribute.DateTime;
+    is_active: Attribute.Boolean;
+    date: Attribute.Date;
+    createdAt: Attribute.DateTime;
+    updatedAt: Attribute.DateTime;
+    createdBy: Attribute.Relation<
+      'api::user-activity.user-activity',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+    updatedBy: Attribute.Relation<
+      'api::user-activity.user-activity',
+      'oneToOne',
+      'admin::user'
+    > &
+      Attribute.Private;
+  };
+}
+
 declare module '@strapi/types' {
   export module Shared {
     export interface ContentTypes {
@@ -1483,6 +1523,7 @@ declare module '@strapi/types' {
       'api::report.report': ApiReportReport;
       'api::state.state': ApiStateState;
       'api::testimonial.testimonial': ApiTestimonialTestimonial;
+      'api::user-activity.user-activity': ApiUserActivityUserActivity;
     }
   }
 }

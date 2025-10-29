@@ -1,0 +1,34 @@
+{
+  "kind": "collectionType",
+  "collectionName": "user_activities",
+  "info": {
+    "singularName": "user-activity",
+    "pluralName": "user-activities",
+    "displayName": "User Activity",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "attendance_records"
+    },
+    "login_time": {
+      "type": "datetime"
+    },
+    "logout_time": {
+      "type": "datetime"
+    },
+    "is_active": {
+      "type": "boolean"
+    },
+    "date": {
+      "type": "date"
+    }
+  }
+}

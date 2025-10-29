@@ -85,6 +85,21 @@
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "team_members"
+    },
+    "is_online": {
+      "type": "boolean"
+    },
+    "last_login": {
+      "type": "datetime"
+    },
+    "last_logout": {
+      "type": "datetime"
+    },
+    "attendance_records": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::user-activity.user-activity",
+      "mappedBy": "user"
     }
   }
 }

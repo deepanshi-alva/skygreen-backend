@@ -8,7 +8,7 @@
     "description": ""
   },
   "options": {
-    "draftAndPublish": true
+    "draftAndPublish": false
   },
   "pluginOptions": {},
   "attributes": {
@@ -29,7 +29,7 @@
       "type": "integer",
       "default": 1
     },
-    "blockUntil":{
+    "blockUntil": {
       "type": "datetime"
     },
     "attempt_count": {
