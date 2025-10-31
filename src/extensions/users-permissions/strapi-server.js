@@ -4,14 +4,25 @@ const dayjs = require("dayjs");
 module.exports = (plugin) => {
   const originalLogin = plugin.controllers.auth.callback;
 
-  // 🔥 Override default login callback
+  // ✅ Override default login controller
   plugin.controllers.auth.callback = async (ctx) => {
-    const response = await originalLogin(ctx);
-    try {
-      const { user } = response;
-      if (!user) return response;
+    // Call original Strapi login
+    await originalLogin(ctx);
 
-      console.log("entered into the user era where the user login things will be stored here ");
+    try {
+      console.log(
+        "entered into the user era where the user login things will be stored here"
+      );
+
+      // In newer Strapi, login response is stored in ctx.body
+      const user = ctx.body?.user || ctx.response?.body?.user;
+
+      if (!user) {
+        strapi.log.warn(
+          "⚠️ No user found in login response — skipping attendance update."
+        );
+        return;
+      }
 
       // ✅ Mark user online
       await strapi.db.query("plugin::users-permissions.user").update({
@@ -37,7 +48,8 @@ module.exports = (plugin) => {
       strapi.log.error("Login hook error:", err);
     }
 
-    return response;
+    // Important: always return what the original login wrote
+    return ctx.body;
   };
 
   return plugin;
