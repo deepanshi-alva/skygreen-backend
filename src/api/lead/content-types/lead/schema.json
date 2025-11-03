@@ -231,6 +231,20 @@
       "allowedTypes": [
         "files"
       ]
+    },
+    "stage_at_which_case_is": {
+      "type": "enumeration",
+      "enum": [
+        "resolved",
+        "unresolved",
+        "pending",
+        "active",
+        "transferred case",
+        "followup missed",
+        "followup scheduled",
+        "untouched"
+      ],
+      "default": "untouched"
     }
   }
 }

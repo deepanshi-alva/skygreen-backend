@@ -1106,6 +1106,19 @@ export interface ApiLeadLead extends Schema.CollectionType {
     scheduled_date: Attribute.Date;
     scheduled_time: Attribute.String;
     calculator_pdf: Attribute.Media<'files'>;
+    stage_at_which_case_is: Attribute.Enumeration<
+      [
+        'resolved',
+        'unresolved',
+        'pending',
+        'active',
+        'transferred case',
+        'followup missed',
+        'followup scheduled',
+        'untouched'
+      ]
+    > &
+      Attribute.DefaultTo<'untouched'>;
     createdAt: Attribute.DateTime;
     updatedAt: Attribute.DateTime;
     createdBy: Attribute.Relation<'api::lead.lead', 'oneToOne', 'admin::user'> &
