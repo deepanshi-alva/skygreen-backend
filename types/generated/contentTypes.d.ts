@@ -786,7 +786,7 @@ export interface PluginUsersPermissionsUser extends Schema.CollectionType {
       'manyToOne',
       'plugin::users-permissions.user'
     >;
-    is_online: Attribute.Boolean;
+    is_online: Attribute.Boolean & Attribute.DefaultTo<false>;
     last_login: Attribute.DateTime;
     last_logout: Attribute.DateTime;
     attendance_records: Attribute.Relation<

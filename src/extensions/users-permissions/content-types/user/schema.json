@@ -87,7 +87,8 @@
       "inversedBy": "team_members"
     },
     "is_online": {
-      "type": "boolean"
+      "type": "boolean",
+      "default": false
     },
     "last_login": {
       "type": "datetime"

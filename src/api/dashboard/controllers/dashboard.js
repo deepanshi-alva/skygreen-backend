@@ -22,11 +22,11 @@ module.exports = {
 
             // ---------------------------
             // 3️⃣ Users who logged in today
-            const loggedInToday = await strapi.db
-                .query("api::user-activity.user-activity")
-                .count({
-                    where: { date: today },
-                });
+            // const loggedInToday = await strapi.db
+            //     .query("api::user-activity.user-activity")
+            //     .count({
+            //         where: { date: today },
+            //     });
 
             // ---------------------------
             // 4️⃣ Inactive users (not logged in for > 7 days)
@@ -72,11 +72,13 @@ module.exports = {
                     where: { stage_at_which_case_is: "resolved" },
                 });
 
-            // const followupScheduled = await strapi.db
-            //     .query("api::lead.lead")
-            //     .count({
-            //         where: { stage_at_which_case_is: "followup scheduled" },
-            //     });
+            const followupScheduled = await strapi.db
+                .query("api::lead.lead")
+                .count({
+                    where: { stage_at_which_case_is: "followup scheduled" },
+                });
+
+            console.log("this is the summary", totalLeads)
 
             // ---------------------------
             // 🧩 Final structured response
@@ -84,18 +86,24 @@ module.exports = {
                 summary: {
                     totalUsers,
                     onlineUsers,
-                    loggedInToday,
+                    // loggedInToday,
                     inactiveUsers,
-                    offlineUsers
-                },
-                leads: {
+                    offlineUsers,
                     totalLeads,
                     untouchedLeads,
                     activeLeads,
                     pendingLeads,
                     resolvedLeads,
-                    // followupScheduled,
+                    followupScheduled,
                 },
+                // leads: {
+                //     totalLeads,
+                //     untouchedLeads,
+                //     activeLeads,
+                //     pendingLeads,
+                //     resolvedLeads,
+                //     followupScheduled,
+                // },
             });
         } catch (err) {
             console.error("User Insights Error:", err);
