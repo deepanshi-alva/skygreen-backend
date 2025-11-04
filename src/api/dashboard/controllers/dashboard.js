@@ -21,14 +21,6 @@ module.exports = {
                 });
 
             // ---------------------------
-            // 3️⃣ Users who logged in today
-            // const loggedInToday = await strapi.db
-            //     .query("api::user-activity.user-activity")
-            //     .count({
-            //         where: { date: today },
-            //     });
-
-            // ---------------------------
             // 4️⃣ Inactive users (not logged in for > 7 days)
             const inactiveUsers = await strapi.db
                 .query("plugin::users-permissions.user")
@@ -96,14 +88,6 @@ module.exports = {
                     resolvedLeads,
                     followupScheduled,
                 },
-                // leads: {
-                //     totalLeads,
-                //     untouchedLeads,
-                //     activeLeads,
-                //     pendingLeads,
-                //     resolvedLeads,
-                //     followupScheduled,
-                // },
             });
         } catch (err) {
             console.error("User Insights Error:", err);
