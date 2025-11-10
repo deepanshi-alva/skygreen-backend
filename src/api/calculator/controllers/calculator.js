@@ -21,8 +21,8 @@ function suggestSkuOptions(finalDcKw) {
             ratio === 1
               ? "Perfect match"
               : ratio > 1
-              ? "Over-paneling (clipping possible)"
-              : "Under-paneling (future expansion room)",
+                ? "Over-paneling (clipping possible)"
+                : "Under-paneling (future expansion room)",
         };
       }
       return null;
@@ -63,8 +63,8 @@ function getInverterOptions(finalDcKw) {
           ratio === 1
             ? "Perfect match, zero clipping"
             : ratio > 1
-            ? "Over-paneling (clipping possible)"
-            : "Under-paneling (future expansion room)",
+              ? "Over-paneling (clipping possible)"
+              : "Under-paneling (future expansion room)",
       });
     }
   });
@@ -219,8 +219,8 @@ function getBatteryOptions(finalDcKw, settings, inverterKw) {
         opt.ah === 100
           ? "Cheapest lithium option, but limited for heavy loads."
           : opt.ah === 150
-          ? "Good balance of price vs backup. Suitable for households with occasional AC use."
-          : "Higher cost, but gives the longest and most reliable backup.",
+            ? "Good balance of price vs backup. Suitable for households with occasional AC use."
+            : "Higher cost, but gives the longest and most reliable backup.",
       recommended: opt.ah === recommendedLithiumAh, // ✅ Dynamic recommendation
       max_batteries_per_day: opt.maxPerDay,
       max_battery_ah: maxBatteryAh.toFixed(0),
@@ -330,6 +330,14 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
       state = 0; // No subsidy above 30 kW
     }
   }
+  else if (name.toLowerCase() === "rajasthan") {
+    const eligibleKw = Math.min(finalDcKw, 10);
+    const flatRate = 17000;
+    const totalSubsidy = eligibleKw * flatRate;
+
+    state = totalSubsidy;
+    sgst = 0;
+  }
   if (name.toLowerCase() === "telangana") {
     // Step 2: SGST reimbursement (100% of 2.5%)
     sgst = subsidyEligibleKw * benchmarkCostPerKw * 0.025;
@@ -386,8 +394,7 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     state = Math.min(state, 60000); // cap safeguard
   } else if (
     name.toLowerCase() === "madhya pradesh" ||
-    name.toLowerCase() === "maharashtra" ||
-    name.toLowerCase() === "rajasthan"
+    name.toLowerCase() === "maharashtra"
   ) {
     // --- State subsidy percentage-based ---
     const grossCost = finalDcKw * benchmarkCostPerKw;
@@ -739,12 +746,12 @@ module.exports = {
       // Step 5: Subsidy Eligible KW
       const subsidyResult = is_rwa
         ? rwaSubsidyCalc(
-            finalDcKw,
-            stateData,
-            settings.rwa_cost_inr_per_kw,
-            per_house_sanctioned_load_kw,
-            num_houses
-          )
+          finalDcKw,
+          stateData,
+          settings.rwa_cost_inr_per_kw,
+          per_house_sanctioned_load_kw,
+          num_houses
+        )
         : subsidyCalc(finalDcKw, stateData, settings.cost_inr_per_kw);
 
       const {
