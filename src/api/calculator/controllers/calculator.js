@@ -331,9 +331,9 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     }
   }
   else if (name.toLowerCase() === "rajasthan") {
-    const eligibleKw = Math.min(finalDcKw, 10);
-    const flatRate = 17000;
-    const totalSubsidy = eligibleKw * flatRate;
+    // const eligibleKw = Math.min(finalDcKw, 10);
+    const totalSubsidy = 17000;
+    // const totalSubsidy = eligibleKw * flatRate;
 
     state = totalSubsidy;
     sgst = 0;
