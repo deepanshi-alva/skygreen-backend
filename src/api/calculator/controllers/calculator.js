@@ -138,8 +138,8 @@ function getStringDesign(panelCount) {
 
 /* ----------------- Battery Options (SKYGREEN Style Output) ----------------- */
 
-function getBatteryOptions(finalDcKw, settings, inverterKw) {
-  const psh = settings.solar_hours_per_day || 5.5;
+function getBatteryOptions(finalDcKw, settings, inverterKw, psh) {
+  // const psh = settings.solar_hours_per_day || 5.5;
   console.log("this is the finaldcw", finalDcKw);
 
   // Daily solar kWh generation (PR 0.8 + bifacial 1.05)
@@ -612,6 +612,7 @@ module.exports = {
         per_house_sanctioned_load_kw = 0,
         plant_size_kw = 0,
         discom_extra_charges = 200,
+         psh = 5, 
       } = ctx.request.body;
 
       // Fetch calculator settings (includes subsidy values)
@@ -686,7 +687,7 @@ module.exports = {
           );
         }
 
-        recommendedKw = monthlyUnits / (settings.solar_hours_per_day * 30);
+        recommendedKw = monthlyUnits / (psh * 30);
         panelCount = Math.ceil((recommendedKw * 1000) / settings.panel_watt_w);
         finalDcKw = panelCount * (settings.panel_watt_w / 1000);
         console.log("from here the finaldckw is being calculated", finalDcKw);
@@ -740,7 +741,8 @@ module.exports = {
       const batteryOptions = getBatteryOptions(
         finalDcKw,
         settings,
-        nearestSku?.inverter_kw || 5
+        nearestSku?.inverter_kw || 5,
+        psh,
       );
 
       // Step 5: Subsidy Eligible KW
