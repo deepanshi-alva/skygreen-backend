@@ -612,7 +612,7 @@ module.exports = {
         per_house_sanctioned_load_kw = 0,
         plant_size_kw = 0,
         discom_extra_charges = 200,
-         psh = 5, 
+        psh = 5.5, 
       } = ctx.request.body;
 
       // Fetch calculator settings (includes subsidy values)
