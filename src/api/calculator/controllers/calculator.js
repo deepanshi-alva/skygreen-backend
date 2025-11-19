@@ -149,6 +149,8 @@ function getBatteryOptions(finalDcKw, settings, inverterKw, psh) {
   // Energy available for charging after inverter/charging losses
   const eCharge = eSolar * 0.9;
 
+  console.log("this is the inverter kw", inverterKw, eCharge)
+
   // Bus voltage based on inverter size
   let busV = 48;
   if (inverterKw <= 2) busV = 24;
@@ -156,6 +158,7 @@ function getBatteryOptions(finalDcKw, settings, inverterKw, psh) {
 
   // ✅ Direct max battery size in Ah
   const maxBatteryAh = (eCharge * 1000) / busV;
+  console.log("this is the max battery ah", maxBatteryAh, busV)
 
   let output = [];
 
@@ -611,8 +614,9 @@ module.exports = {
         society_sanctioned_load_kw = 0,
         per_house_sanctioned_load_kw = 0,
         plant_size_kw = 0,
-        discom_extra_charges = 200,
-        psh = 5.5, 
+        discom_extra_charges = 0,
+        battery_amount= 0,
+        psh = 5.5,
       } = ctx.request.body;
 
       // Fetch calculator settings (includes subsidy values)
@@ -638,7 +642,7 @@ module.exports = {
         return ctx.badRequest(`State ${state_name} not found`);
       }
       const stateData = stateDataArr[0];
-      console.log("this is the state data", stateData);
+      // console.log("this is the state data", stateData);
 
       let rwa_per_house_cap_kw = stateData.rwa_per_house_cap_kw;
       // console.log("this is the rwa per house cap kw", rwa_per_house_cap_kw);
@@ -745,6 +749,8 @@ module.exports = {
         psh,
       );
 
+      console.log("these are the battery options", batteryOptions)
+
       // Step 5: Subsidy Eligible KW
       const subsidyResult = is_rwa
         ? rwaSubsidyCalc(
@@ -771,6 +777,8 @@ module.exports = {
         : settings.cost_inr_per_kw;
       const grossCostInr = finalDcKw * systemCostPerKw;
       const netCostInr = Math.max(grossCostInr - totalSubsidyInr, 0);
+      const netCostInrIncludingBattery = Math.max(netCostInr + battery_amount, 0);
+      console.log("this is the net cost including the battery",netCostInrIncludingBattery)
 
       // Step 8: Generation
       // console.log("this is the recommended system", recommendedKw);
@@ -788,26 +796,33 @@ module.exports = {
       const lifetime_saving = annualSaving * 30;
 
       // Discom charge
-      const discomCharge = Number(discom_extra_charges) || 200;
+      const discomCharge = Number(discom_extra_charges) || 0;
       const annualDiscom = discomCharge * 12;
       const totalDiscom = annualDiscom * 30;
+      console.log("this is the discom charges which is giving the issue currently", totalDiscom)
       // console.log("this is the total discom", totalDiscom);
 
       // Net savings per year after discom
       const annualSavingNet = annualSaving;
 
       // Step 10: Payback
-      let paybackYears = netCostInr > 0 ? netCostInr / annualSaving : 0;
+      let paybackYears = netCostInrIncludingBattery > 0 ? netCostInrIncludingBattery/annualSaving : netCostInr / annualSaving;
 
       // Only count years after payback
-      const yearsAfterPayback = Math.max(
-        settings.lifetime_years - Math.ceil(paybackYears),
-        0
+      // const yearsAfterPayback = Math.max(
+      //   settings.lifetime_years - paybackYears,
+      //   0
+      // );
+      // Only count years after payback
+      const yearsAfterPayback = Number(
+        Math.max(settings.lifetime_years - paybackYears, 0).toFixed(2)
       );
+
 
       // Net gain after payback = savings in remaining years
       const netGainAfterPayback =
         annualSavingNet * yearsAfterPayback - totalDiscom;
+      console.log("this is the annual saving net", annualSavingNet, netGainAfterPayback, totalDiscom, yearsAfterPayback)
 
       // Step 11: Roof Feasibility
       let roofNeededSqft;
@@ -882,6 +897,8 @@ module.exports = {
         eligibleKw: eligibleKw,
         gross_cost_inr: grossCostInr,
         net_cost_inr: netCostInr,
+        net_cost_inr_including_battery: netCostInrIncludingBattery,
+        battery_cost: battery_amount,
         daily_gen_kwh: dailyGen,
         monthly_gen_kwh: monthlyGen,
         annual_gen_y1_kwh: annualGen,
