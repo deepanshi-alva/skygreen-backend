@@ -429,6 +429,15 @@ const subsidyCalc = (finalDcKw, stateData, benchmarkCostPerKw) => {
     if (subsidyKw === 1) state = 45000;
     else if (subsidyKw === 2) state = 90000;
     else if (subsidyKw >= 3) state = 117000; // applies up to 10 kW
+  } else if (name.toLowerCase() === "chhattisgarh") {
+    // --- Chhattisgarh Residential Rooftop Subsidy (2025) ---
+    // Only for Residential mode — handled outside, so applying directly here
+
+    if (finalDcKw <= 1) {
+      state = 15000; // 1 kW
+    } else {
+      state = 30000; // 2 kW and above
+    }
   } else {
     // Default logic → per kW top-up
     if (state_top_up && state_top_up > 0) {
@@ -615,7 +624,7 @@ module.exports = {
         per_house_sanctioned_load_kw = 0,
         plant_size_kw = 0,
         discom_extra_charges = 0,
-        battery_amount= 0,
+        battery_amount = 0,
         psh = 5.5,
       } = ctx.request.body;
 
@@ -778,7 +787,7 @@ module.exports = {
       const grossCostInr = finalDcKw * systemCostPerKw;
       const netCostInr = Math.max(grossCostInr - totalSubsidyInr, 0);
       const netCostInrIncludingBattery = Math.max(netCostInr + battery_amount, 0);
-      console.log("this is the net cost including the battery",netCostInrIncludingBattery)
+      console.log("this is the net cost including the battery", netCostInrIncludingBattery)
 
       // Step 8: Generation
       // console.log("this is the recommended system", recommendedKw);
@@ -806,7 +815,7 @@ module.exports = {
       const annualSavingNet = annualSaving;
 
       // Step 10: Payback
-      let paybackYears = netCostInrIncludingBattery > 0 ? netCostInrIncludingBattery/annualSaving : netCostInr / annualSaving;
+      let paybackYears = netCostInrIncludingBattery > 0 ? netCostInrIncludingBattery / annualSaving : netCostInr / annualSaving;
 
       // Only count years after payback
       // const yearsAfterPayback = Math.max(
